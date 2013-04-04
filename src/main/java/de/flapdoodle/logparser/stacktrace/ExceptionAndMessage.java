@@ -9,4 +9,9 @@ public class ExceptionAndMessage {
 		_exception = exception;
 		_message = message;
 	}
+	
+	@Override
+	public String toString() {
+		return _exception+":"+_message;
+	}
 }

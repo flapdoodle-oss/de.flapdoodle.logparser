@@ -15,4 +15,9 @@ public class At {
 				? Integer.valueOf(line)
 				: null;
 	}
+	
+	@Override
+	public String toString() {
+		return "\tat "+_classname+"."+_method+"("+(((_file!=null) && (_line!=null)) ? ""+_file+":"+_line : "???")+")"; 
+	}
 }

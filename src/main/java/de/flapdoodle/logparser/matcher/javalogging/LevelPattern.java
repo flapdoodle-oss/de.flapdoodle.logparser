@@ -8,7 +8,7 @@ import de.flapdoodle.logparser.matcher.NamedPattern;
 public class LevelPattern extends NamedPattern {
 
 	public LevelPattern() {
-		super("level", allLevels());
+		super("level", "(?<level>"+allLevels()+")");
 	}
 	
 	static String allLevels() {

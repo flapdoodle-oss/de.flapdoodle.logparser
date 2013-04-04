@@ -7,6 +7,11 @@ public class More {
 	public More(String count) {
 		_count = Integer.valueOf(count);
 	}
+	
+	@Override
+	public String toString() {
+		return "\t... "+_count+" more";
+	}
 }
 /*
  * java.lang.RuntimeException: middle
