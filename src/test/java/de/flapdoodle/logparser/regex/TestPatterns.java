@@ -1,4 +1,4 @@
-package de.flapdoodle.logparser.matcher;
+package de.flapdoodle.logparser.regex;
 
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -9,7 +9,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 
 public class TestPatterns {
 
@@ -53,4 +52,24 @@ public class TestPatterns {
 		Assert.assertEquals("firstname", "Susi", match.get().get("firstname"));
 		Assert.assertEquals("secondname", "Sauerbraten", match.get().get("secondname"));
 	}
+	
+	@Test
+	public void joinPatterns() {
+		Pattern name=Patterns.build("[a-zA-Z\\W]+");
+		Pattern firstname=Patterns.namedGroup("firstname",name);
+		Pattern secondname=Patterns.namedGroup("secondname",name);
+		
+		Pattern start=Patterns.build("^");
+		Pattern end=Patterns.build("$");
+		Pattern space=Patterns.build("\\s+");
+		
+		Pattern joinedPattern = Patterns.join(start,firstname,space,secondname,end);
+		
+		Assert.assertEquals("^(?<firstname>[a-zA-Z\\W]+)\\s+(?<secondname>[a-zA-Z\\W]+)$", joinedPattern.pattern());
+		
+		String line="Hans Müller";
+		
+		Assert.assertTrue(line,Patterns.find(joinedPattern,line));
+	}
+
 }

@@ -1,4 +1,4 @@
-package de.flapdoodle.logparser.matcher;
+package de.flapdoodle.logparser.regex;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -44,6 +44,10 @@ public class Patterns {
 		return ImmutableSet.copyOf(callProtectedNamedGroupsMethod(pattern).keySet());
 	}
 
+	public static boolean find(Pattern pattern, String input) {
+		return pattern.matcher(input).find();
+	}
+	
 	public static Optional<Map<String, String>> match(Matcher matcher) {
 		if (matcher.find()) {
 			Map<String, String> map = Maps.newHashMap();
@@ -78,7 +82,7 @@ public class Patterns {
 	public static Pattern namedGroup(String name, Pattern... patterns) {
 		return build(join(asCollection("(?<", name, ">"), asStrings(asCollection(patterns)), asCollection(")")));
 	}
-
+	
 	private static Collection<String> asStrings(Collection<Pattern> patterns) {
 		return Collections2.transform(patterns, new Function<Pattern, String>() {
 
@@ -110,4 +114,5 @@ public class Patterns {
 	private static <T> Collection<T> asCollection(T... values) {
 		return Lists.newArrayList(values);
 	}
+
 }
