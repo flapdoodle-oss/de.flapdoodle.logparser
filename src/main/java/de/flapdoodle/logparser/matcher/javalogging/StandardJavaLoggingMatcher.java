@@ -59,7 +59,14 @@ public class StandardJavaLoggingMatcher implements IMatcher {
 			String firstLine=possibleFirstLine.get();
 			Optional<Map<String, String>> match = Patterns.match(_firstLine.matcher(firstLine));
 			if (match.isPresent()) {
-				return Optional.<IMatch> of(new FullLineMatcher(firstLine,match));
+				Optional<String> possibleSecondLine = reader.nextLine();
+				if (possibleSecondLine.isPresent()) {
+					String secondLine=possibleSecondLine.get();
+					Optional<Map<String, String>> secondMatch = Patterns.match(_secondLine.matcher(secondLine));
+					if (secondMatch.isPresent()) {
+						return Optional.<IMatch> of(new FullLineMatcher(firstLine,match,secondLine,secondMatch));
+					}
+				}
 			}
 		}
 		return Optional.absent();
@@ -81,26 +88,31 @@ public class StandardJavaLoggingMatcher implements IMatcher {
 
 		private final String _firstLine;
 		private final Optional<Map<String, String>> _match;
+		private final String _secondLine;
+		private final Optional<Map<String, String>> _secondMatch;
 
-		public FullLineMatcher(String firstLine, Optional<Map<String, String>> match) {
+		public FullLineMatcher(String firstLine, Optional<Map<String, String>> match, String secondLine, Optional<Map<String,String>> secondMatch) {
 			_firstLine = firstLine;
 			_match = match;
+			_secondLine = secondLine;
+			_secondMatch = secondMatch;
 		}
 
 		@Override
 		public void process(List<String> lines) throws IOException {
+			System.out.println(_firstLine);
+			System.out.println("--" + _match.get());
+
+			System.out.println(_secondLine);
+			System.out.println("--" + _secondMatch.get());
+			
 			if (!lines.isEmpty()) {
 
-				String secondLine = lines.get(0);
-				Optional<Map<String, String>> secondMatch = Patterns.match(_secondLine.matcher(secondLine));
+//				String secondLine = lines.get(0);
+//				Optional<Map<String, String>> secondMatch = Patterns.match(_secondLine.matcher(secondLine));
 
-				System.out.println(_firstLine);
-				System.out.println("--" + _match.get());
 
-				System.out.println(secondLine);
-				System.out.println("--" + secondMatch.get());
-
-				List<String> content = lines.subList(1, lines.size());
+				List<String> content = lines.subList(0, lines.size());
 
 				Optional<StackTrace> stacktrace = StackTraceParser.parse(content);
 				if (stacktrace.isPresent()) {
