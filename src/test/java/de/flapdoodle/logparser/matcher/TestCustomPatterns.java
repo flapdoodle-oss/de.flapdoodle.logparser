@@ -12,7 +12,7 @@ public class TestCustomPatterns {
 	@Test
 	public void className() {
 		assertMatch(CustomPatterns.Classname,"de.haha.Huhu");
-		assertNoMatch(CustomPatterns.Classname,"de.haha.");
+		assertNotFullMatch(CustomPatterns.Classname,"de.haha.");
 	}
 	
 //	@Test
@@ -36,4 +36,22 @@ public class TestCustomPatterns {
 		String match = matcher.group();
 		Assert.assertFalse(notToMatch+"!="+match,notToMatch.equals(match));
 	}
+	
+	@Test
+	public void validDate() {
+		String datePart = "Apr 04, 2013 8:15:44 PM";
+		
+		Matcher matcher = CustomPatterns.Date.matcher(datePart);
+		Assert.assertTrue(matcher.find());
+		Assert.assertEquals(datePart, matcher.group());
+	}
+
+	@Test
+	public void wrongTime() {
+		String datePart = "Apr 04, 2013 8:65:44 PM";
+		
+		Matcher matcher = CustomPatterns.Date.matcher(datePart);
+		Assert.assertFalse(matcher.find());
+	}
+
 }
