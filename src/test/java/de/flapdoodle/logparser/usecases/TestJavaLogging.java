@@ -29,6 +29,7 @@ import org.junit.Test;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 
+import de.flapdoodle.logparser.GenericStreamProcessor;
 import de.flapdoodle.logparser.IMatcher;
 import de.flapdoodle.logparser.IReader;
 import de.flapdoodle.logparser.StreamProcessor;
@@ -45,7 +46,7 @@ public class TestJavaLogging {
 	public void readLogfile() throws IOException {
 		try (InputStream stream = Streams.compressed(getClass().getResourceAsStream("java-logging-stacktrace-sample.txt.gz"))) {
 			IReader reader=new BufferedReaderAdapter(stream, Charsets.UTF_8,1024);
-			StreamProcessor streamProcessor=new StreamProcessor(Lists.<IMatcher>newArrayList(new StandardJavaLoggingMatcher()), new WriteToConsoleLineProcessor());
+			GenericStreamProcessor streamProcessor=new GenericStreamProcessor(Lists.<IMatcher>newArrayList(new StandardJavaLoggingMatcher()), new WriteToConsoleLineProcessor());
 			
 			streamProcessor.process(reader);
 		}
