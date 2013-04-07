@@ -1,7 +1,6 @@
 /**
  * Copyright (C) 2013
  *   Michael Mosmann <michael@mosmann.de>
- *   ${lic.username2} <${lic.email2}>
  *
  * with contributions from
  * 	${lic.developers}
