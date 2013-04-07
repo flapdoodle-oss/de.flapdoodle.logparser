@@ -6,44 +6,44 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public class Patterns {
-
-	static final Method PATTERN_NAMED_GROUP_METHOD;
+	static final Logger _logger=Logger.getLogger(Pattern.class.getName());
+	
+	
+	static final IPatternNameSetExtractor PATTERN_NAME_SET_EXTRACTOR;
 	static {
+		IPatternNameSetExtractor instance = new ParsePatternForGroupNamesNameSetExtractor();
 		try {
-			PATTERN_NAMED_GROUP_METHOD = Pattern.class.getDeclaredMethod("namedGroups");
-			PATTERN_NAMED_GROUP_METHOD.setAccessible(true);
-		} catch (NoSuchMethodException | SecurityException e) {
-			throw new RuntimeException(e);
+			instance = new ProtectedMethodCallSetExtractor();
+		} catch (RuntimeException ex) {
+			_logger.log(Level.WARNING,"choose pattern name set extractor",ex);
 		}
+		PATTERN_NAME_SET_EXTRACTOR=instance;
 	}
 
 	private Patterns() {
 		// no instance
 	}
 
-	private static Map<String, Integer> callProtectedNamedGroupsMethod(Pattern pattern) {
-		try {
-			return (Map<String, Integer>) PATTERN_NAMED_GROUP_METHOD.invoke(pattern);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			throw new RuntimeException(e);
-		}
-	}
 
 	public static Set<String> names(Pattern pattern) {
-		return ImmutableSet.copyOf(callProtectedNamedGroupsMethod(pattern).keySet());
+		return PATTERN_NAME_SET_EXTRACTOR.names(pattern);
 	}
-
+	
 	public static boolean find(Pattern pattern, String input) {
 		return pattern.matcher(input).find();
 	}
@@ -115,4 +115,56 @@ public class Patterns {
 		return Lists.newArrayList(values);
 	}
 
+	@VisibleForTesting
+	protected static interface IPatternNameSetExtractor {
+		Set<String> names(Pattern pattern);
+	}
+	
+	@VisibleForTesting
+	protected static class ParsePatternForGroupNamesNameSetExtractor implements IPatternNameSetExtractor {
+
+		final Pattern GROUP_NAMES_PATTERN = Pattern.compile("\\?\\<([a-zA-Z0-9]+)\\>");
+		
+		protected Set<String> namesFallback(Pattern pattern) {
+			Set<String> ret=Sets.newHashSet();
+			Matcher groupNamesMatcher = GROUP_NAMES_PATTERN.matcher(pattern.pattern());
+			while (groupNamesMatcher.find()) {
+				ret.add(groupNamesMatcher.group(1));
+			}
+			return ret;
+		}
+		
+		@Override
+		public Set<String> names(Pattern pattern) {
+			return ImmutableSet.copyOf(namesFallback(pattern));
+		}
+		
+	}
+	
+	@VisibleForTesting
+	protected static class ProtectedMethodCallSetExtractor implements IPatternNameSetExtractor {
+		
+		final Method PATTERN_NAMED_GROUP_METHOD;
+		{
+			try {
+				PATTERN_NAMED_GROUP_METHOD = Pattern.class.getDeclaredMethod("namedGroups");
+				PATTERN_NAMED_GROUP_METHOD.setAccessible(true);
+			} catch (NoSuchMethodException | SecurityException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		private Map<String, Integer> callProtectedNamedGroupsMethod(Pattern pattern) {
+			try {
+				return (Map<String, Integer>) PATTERN_NAMED_GROUP_METHOD.invoke(pattern);
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		@Override
+		public Set<String> names(Pattern pattern) {
+			return ImmutableSet.copyOf(callProtectedNamedGroupsMethod(pattern).keySet());
+		}
+	}
 }

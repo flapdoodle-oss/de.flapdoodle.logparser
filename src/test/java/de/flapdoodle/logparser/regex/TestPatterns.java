@@ -1,6 +1,7 @@
 package de.flapdoodle.logparser.regex;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -9,6 +10,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.sun.org.apache.bcel.internal.generic.NEW;
 
 public class TestPatterns {
 
@@ -71,5 +75,21 @@ public class TestPatterns {
 		
 		Assert.assertTrue(line,Patterns.find(joinedPattern,line));
 	}
+	
+	@Test
+	public void groupNamesAreTheSame() {
+		Patterns.IPatternNameSetExtractor extractorA = new Patterns.ProtectedMethodCallSetExtractor();
+		Patterns.IPatternNameSetExtractor extractorB = new Patterns.ParsePatternForGroupNamesNameSetExtractor();
 
+		assertSameGroupNames("^(?<firstname>[a-zA-Z\\W]+)\\s+(?<secondname>[a-zA-Z\\W]+)$",extractorA,extractorB);
+		assertSameGroupNames("(?<start1>[a-z]+)(?<end>[0-9]+)",extractorA,extractorB);
+	}
+
+	private void assertSameGroupNames(String regex,Patterns.IPatternNameSetExtractor extractorA,Patterns.IPatternNameSetExtractor extractorB) {
+		Pattern pattern = Pattern.compile(regex);
+		Set<String> groupNamesNative=extractorA.names(pattern);
+		Set<String> groupNamesFallback=extractorB.names(pattern);
+		
+		Assert.assertEquals(""+regex,ImmutableSet.of(), Sets.difference(groupNamesNative, groupNamesFallback).immutableCopy());
+	}
 }

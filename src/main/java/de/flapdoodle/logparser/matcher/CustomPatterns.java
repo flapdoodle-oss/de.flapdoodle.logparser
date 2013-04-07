@@ -1,11 +1,11 @@
 package de.flapdoodle.logparser.matcher;
 
-import java.util.logging.Level;
-import java.util.regex.Pattern;
+import static de.flapdoodle.logparser.regex.Patterns.build;
+import static de.flapdoodle.logparser.regex.Patterns.join;
 import static java.util.regex.Pattern.compile;
 
-import de.flapdoodle.logparser.regex.Patterns;
-import static de.flapdoodle.logparser.regex.Patterns.*;
+import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 public class CustomPatterns {
 
