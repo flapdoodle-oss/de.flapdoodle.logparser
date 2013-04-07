@@ -104,7 +104,7 @@
 						<include>**/test/**</include>
 					</includes>
 					<excludes>
-						<exclude>src/test/*</exclude>
+						<exclude>src/test/resources/**</exclude>
 					</excludes>
 					<!-- <excludes> <exclude>target/**</exclude> <exclude>.clover/**</exclude> 
 						</excludes> <useDefaultExcludes>true</useDefaultExcludes> -->
