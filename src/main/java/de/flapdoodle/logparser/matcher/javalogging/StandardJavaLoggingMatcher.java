@@ -26,15 +26,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 
+import de.flapdoodle.logparser.GenericStreamProcessor;
+import de.flapdoodle.logparser.ILineProcessor;
 import de.flapdoodle.logparser.IMatch;
 import de.flapdoodle.logparser.IMatcher;
 import de.flapdoodle.logparser.IReader;
+import de.flapdoodle.logparser.IStreamListener;
+import de.flapdoodle.logparser.LogEntry;
+import de.flapdoodle.logparser.io.StringListReaderAdapter;
 import de.flapdoodle.logparser.matcher.CustomPatterns;
 import de.flapdoodle.logparser.regex.Patterns;
 import de.flapdoodle.logparser.stacktrace.StackTrace;
 
-public class StandardJavaLoggingMatcher implements IMatcher {
+public class StandardJavaLoggingMatcher implements IMatcher<LogEntry> {
 
 	//	NamedPatterns _firstLine = new NamedPatterns(new NamedPattern("^"), new DatePattern(), new NamedPattern("(\\s+)"),
 	//			new ClassPattern(), new NamedPattern("(\\s+)"), new MethodPattern());
@@ -51,7 +57,7 @@ public class StandardJavaLoggingMatcher implements IMatcher {
 			Patterns.namedGroup("message", Patterns.build(".*")), Patterns.build("$"));
 
 	@Override
-	public Optional<IMatch> match(IReader reader) throws IOException {
+	public Optional<IMatch<LogEntry>> match(IReader reader) throws IOException {
 		//		int currentPosition = 0;
 
 		Optional<String> possibleFirstLine = reader.nextLine();
@@ -64,7 +70,7 @@ public class StandardJavaLoggingMatcher implements IMatcher {
 					String secondLine=possibleSecondLine.get();
 					Optional<Map<String, String>> secondMatch = Patterns.match(_secondLine.matcher(secondLine));
 					if (secondMatch.isPresent()) {
-						return Optional.<IMatch> of(new FullLineMatcher(firstLine,match,secondLine,secondMatch));
+						return Optional.<IMatch<LogEntry>> of(new FullLineMatcher(firstLine,match,secondLine,secondMatch));
 					}
 				}
 			}
@@ -84,7 +90,7 @@ public class StandardJavaLoggingMatcher implements IMatcher {
 		//		}
 	}
 
-	static class FullLineMatcher implements IMatch {
+	static class FullLineMatcher implements IMatch<LogEntry> {
 
 		private final String _firstLine;
 		private final Optional<Map<String, String>> _match;
@@ -99,7 +105,7 @@ public class StandardJavaLoggingMatcher implements IMatcher {
 		}
 
 		@Override
-		public void process(List<String> lines) throws IOException {
+		public LogEntry process(List<String> lines) throws IOException {
 			System.out.println(_firstLine);
 			System.out.println("--" + _match.get());
 
@@ -111,19 +117,35 @@ public class StandardJavaLoggingMatcher implements IMatcher {
 //				String secondLine = lines.get(0);
 //				Optional<Map<String, String>> secondMatch = Patterns.match(_secondLine.matcher(secondLine));
 
-
-				List<String> content = lines.subList(0, lines.size());
-
-				Optional<StackTrace> stacktrace = StackTraceParser.parse(content);
-				if (stacktrace.isPresent()) {
-					System.out.println(">> stacktrace found: " + stacktrace.get());
-				} else {
-
-					for (String line : content) {
-						System.out.println(">> " + line);
+				GenericStreamProcessor<String> contentProcessor = new GenericStreamProcessor<String>(Lists.<IMatcher<String>>newArrayList(new StackTraceMatcher()), new ILineProcessor() {
+					
+					@Override
+					public void processLine(String line) {
+						System.out.println(">>" + line);
 					}
-				}
+				},new IStreamListener<String>() {
+					public void entry(String value) {
+						System.out.println("Entry:[" + value+"]");
+					};
+				});
+				
+				contentProcessor.process(new StringListReaderAdapter(lines));
+
+//				List<String> content = lines;
+
+//				Optional<StackTrace> stacktrace = StackTraceParser.parse(content);
+//				if (stacktrace.isPresent()) {
+//					System.out.println(">> stacktrace found: " + stacktrace.get());
+//				} else {
+//
+//					for (String line : content) {
+//						System.out.println(">> " + line);
+//					}
+//				}
+				
 			}
+			return new LogEntry();
 		}
 	}
+	
 }

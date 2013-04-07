@@ -44,7 +44,7 @@ public final class StackTraceParser {
 	private static final String LINE_GROUP_ID = "LINE";
 	private static final String CLASSNAME_GROUP_ID = "CLASSNAME";
 
-	private static final String CLASSNAME_PATTERN = "(?<" + CLASSNAME_GROUP_ID + ">([a-zA-Z]+)((\\.|\\$)[a-zA-Z]+)*)";
+	private static final String CLASSNAME_PATTERN = "(?<" + CLASSNAME_GROUP_ID + ">([a-zA-Z]+)((\\.|\\$)[a-zA-Z][a-zA-Z\\$0-9]*)*)";
 
 	static final Pattern AT_LINE_PATTERN = Pattern.compile("^(\\s+)at(\\s+)" + CLASSNAME_PATTERN + "\\.(?<"
 			+ METHOD_GROUP_ID + ">([a-zA-Z][a-zA-Z0-9]*))" + "\\(((Native Method)|((?<" + FILE_GROUP_ID

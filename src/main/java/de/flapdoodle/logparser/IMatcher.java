@@ -23,8 +23,8 @@ import java.io.IOException;
 
 import com.google.common.base.Optional;
 
-public interface IMatcher {
+public interface IMatcher<T> {
 
-	Optional<IMatch> match(IReader reader) throws IOException;
+	Optional<IMatch<T>> match(IReader reader) throws IOException;
 	
 }

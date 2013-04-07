@@ -32,6 +32,7 @@ public class TestCustomPatterns {
 	public void className() {
 		assertMatch(CustomPatterns.Classname,"de.haha.Huhu");
 		assertNotFullMatch(CustomPatterns.Classname,"de.haha.");
+		assertMatch(CustomPatterns.Classname,"org.junit.runners.BlockJUnit4ClassRunner");
 	}
 	
 //	@Test

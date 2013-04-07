@@ -33,6 +33,8 @@ import de.flapdoodle.logparser.GenericStreamProcessor;
 import de.flapdoodle.logparser.IMatcher;
 import de.flapdoodle.logparser.IReader;
 import de.flapdoodle.logparser.IRewindableReader;
+import de.flapdoodle.logparser.IStreamListener;
+import de.flapdoodle.logparser.LogEntry;
 import de.flapdoodle.logparser.io.BufferedReaderAdapter;
 import de.flapdoodle.logparser.io.Streams;
 import de.flapdoodle.logparser.io.WriteToConsoleLineProcessor;
@@ -46,7 +48,12 @@ public class TestJavaLogging {
 	public void readLogfile() throws IOException {
 		try (InputStream stream = Streams.compressed(getClass().getResourceAsStream("java-logging-stacktrace-sample.txt.gz"))) {
 			IRewindableReader reader=new BufferedReaderAdapter(stream, Charsets.UTF_8,1024);
-			GenericStreamProcessor streamProcessor=new GenericStreamProcessor(Lists.<IMatcher>newArrayList(new StandardJavaLoggingMatcher()), new WriteToConsoleLineProcessor());
+			GenericStreamProcessor<LogEntry> streamProcessor=new GenericStreamProcessor<LogEntry>(Lists.<IMatcher<LogEntry>>newArrayList(new StandardJavaLoggingMatcher()), new WriteToConsoleLineProcessor(),new IStreamListener<LogEntry>() {
+				@Override
+				public void entry(LogEntry value) {
+					System.out.println("LogEntry: "+value);
+				}
+			});
 			
 			streamProcessor.process(reader);
 		}

@@ -26,21 +26,23 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
-public class GenericStreamProcessor {
+public class GenericStreamProcessor<T> {
 
-	private final Collection<IMatcher> _matcher;
+	private final Collection<IMatcher<T>> _matcher;
 	private final ILineProcessor _defaultLineProcessor;
+	private final IStreamListener<T> _listener;
 
-	public GenericStreamProcessor(Collection<IMatcher> matcher, ILineProcessor defaultLineProcessor) {
+	public GenericStreamProcessor(Collection<IMatcher<T>> matcher, ILineProcessor defaultLineProcessor,IStreamListener<T> listener) {
 		_matcher = matcher;
 		_defaultLineProcessor = defaultLineProcessor;
+		_listener = listener;
 	}
 
 	public void process(IRewindableReader reader) throws IOException {
 		boolean eof = false;
 
 		do {
-			Optional<IMatch> match = firstMatch(reader);
+			Optional<IMatch<T>> match = firstMatch(reader);
 			if (match.isPresent()) {
 				process(reader, match);
 			} else {
@@ -54,31 +56,35 @@ public class GenericStreamProcessor {
 		} while (!eof);
 	}
 
-	private void process(IRewindableReader reader, Optional<IMatch> match) throws IOException {
+	private void process(IRewindableReader reader, Optional<IMatch<T>> match) throws IOException {
 		List<String> nonMatchingLines = Lists.newArrayList();
 
 		boolean readDone = false;
 
 		do {
-			Optional<IMatch> nextMatch = firstMatch(reader);
+			Optional<IMatch<T>> nextMatch = firstMatch(reader);
 			if (nextMatch.isPresent()) {
-				match.get().process(nonMatchingLines);
+				T result=match.get().process(nonMatchingLines);
+				_listener.entry(result);
 				nonMatchingLines = Lists.newArrayList();
 			} else {
 				Optional<String> nextLine = reader.nextLine();
 				if (nextLine.isPresent()) {
 					nonMatchingLines.add(nextLine.get());
 				} else {
+					T result=match.get().process(nonMatchingLines);
+					_listener.entry(result);
+					nonMatchingLines = Lists.newArrayList();
 					readDone = true;
 				}
 			}
 		} while (!readDone);
 	}
 
-	private Optional<IMatch> firstMatch(IRewindableReader reader) throws IOException {
+	private Optional<IMatch<T>> firstMatch(IRewindableReader reader) throws IOException {
 		reader.setMarker();
-		for (IMatcher matcher : _matcher) {
-			Optional<IMatch> match = matcher.match(reader);
+		for (IMatcher<T> matcher : _matcher) {
+			Optional<IMatch<T>> match = matcher.match(reader);
 			if (match.isPresent()) {
 				return match;
 			} else {
