@@ -37,49 +37,54 @@ public class GenericStreamProcessor {
 	}
 
 	public void process(IRewindableReader reader) throws IOException {
-		Optional<String> possibleLine = reader.nextLine();
-		if (possibleLine.isPresent()) {
-			String line = possibleLine.get();
+		boolean eof = false;
 
-			Optional<IMatch> match = firstMatch(line);
+		do {
+			Optional<IMatch> match = firstMatch(reader);
 			if (match.isPresent()) {
-				process(reader, line, match);
+				process(reader, match);
 			} else {
-				_defaultLineProcessor.processLine(line);
+				Optional<String> nextLine = reader.nextLine();
+				if (nextLine.isPresent()) {
+					_defaultLineProcessor.processLine(nextLine.get());
+				} else {
+					eof = true;
+				}
 			}
-		}
+		} while (!eof);
 	}
 
-	private void process(IRewindableReader reader, String line, Optional<IMatch> match) throws IOException {
+	private void process(IRewindableReader reader, Optional<IMatch> match) throws IOException {
 		List<String> nonMatchingLines = Lists.newArrayList();
 
-		boolean readDone=false;
-		
+		boolean readDone = false;
+
 		do {
-			reader.setMarker();
-			Optional<String> nextLine = reader.nextLine();
-			if (nextLine.isPresent()) {
-				Optional<IMatch> nextMatch = firstMatch(nextLine.get());
-				if (nextMatch.isPresent()) {
-					match.get().process(nonMatchingLines);
-					nonMatchingLines=Lists.newArrayList();
-				} else {
-					nonMatchingLines.add(nextLine.get());
-				}
+			Optional<IMatch> nextMatch = firstMatch(reader);
+			if (nextMatch.isPresent()) {
+				match.get().process(nonMatchingLines);
+				nonMatchingLines = Lists.newArrayList();
 			} else {
-				readDone=true;
+				Optional<String> nextLine = reader.nextLine();
+				if (nextLine.isPresent()) {
+					nonMatchingLines.add(nextLine.get());
+				} else {
+					readDone = true;
+				}
 			}
 		} while (!readDone);
 	}
 
-	Optional<IMatch> firstMatch(String line) {
+	private Optional<IMatch> firstMatch(IRewindableReader reader) throws IOException {
+		reader.setMarker();
 		for (IMatcher matcher : _matcher) {
-			Optional<IMatch> match = matcher.match(line);
+			Optional<IMatch> match = matcher.match(reader);
 			if (match.isPresent()) {
 				return match;
+			} else {
+				reader.jumpToMarker();
 			}
 		}
 		return Optional.absent();
 	}
-
 }

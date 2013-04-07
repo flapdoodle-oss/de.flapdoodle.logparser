@@ -29,6 +29,7 @@ import com.google.common.base.Optional;
 
 import de.flapdoodle.logparser.IMatch;
 import de.flapdoodle.logparser.IMatcher;
+import de.flapdoodle.logparser.IReader;
 import de.flapdoodle.logparser.matcher.CustomPatterns;
 import de.flapdoodle.logparser.regex.Patterns;
 import de.flapdoodle.logparser.stacktrace.StackTrace;
@@ -50,12 +51,16 @@ public class StandardJavaLoggingMatcher implements IMatcher {
 			Patterns.namedGroup("message", Patterns.build(".*")), Patterns.build("$"));
 
 	@Override
-	public Optional<IMatch> match(String firstLine) {
+	public Optional<IMatch> match(IReader reader) throws IOException {
 		//		int currentPosition = 0;
 
-		Optional<Map<String, String>> match = Patterns.match(_firstLine.matcher(firstLine));
-		if (match.isPresent()) {
-			return Optional.<IMatch> of(new FullLineMatcher(firstLine,match));
+		Optional<String> possibleFirstLine = reader.nextLine();
+		if (possibleFirstLine.isPresent()) {
+			String firstLine=possibleFirstLine.get();
+			Optional<Map<String, String>> match = Patterns.match(_firstLine.matcher(firstLine));
+			if (match.isPresent()) {
+				return Optional.<IMatch> of(new FullLineMatcher(firstLine,match));
+			}
 		}
 		return Optional.absent();
 		//		for (NamedPattern p : _patterns) {

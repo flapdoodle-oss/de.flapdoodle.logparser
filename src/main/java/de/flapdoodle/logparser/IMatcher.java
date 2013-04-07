@@ -20,12 +20,11 @@
 package de.flapdoodle.logparser;
 
 import java.io.IOException;
-import java.util.List;
 
 import com.google.common.base.Optional;
 
 public interface IMatcher {
 
-	Optional<IMatch> match(String firstLine);
+	Optional<IMatch> match(IReader reader) throws IOException;
 	
 }
