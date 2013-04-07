@@ -15,11 +15,11 @@ public class TestCustomPatterns {
 		assertNoMatch(CustomPatterns.Classname,"de.haha.");
 	}
 	
-	@Test
-	public void packages() {
-		assertMatch(CustomPatterns.Packages,"de.haha.a.b.c");
-		assertNotFullMatch(CustomPatterns.Packages,"de.haha.A.b.c");
-	}
+//	@Test
+//	public void packages() {
+//		assertMatch(CustomPatterns.Packages,"de.haha.a.b.c");
+//		assertNotFullMatch(CustomPatterns.Packages,"de.haha.A.b.c");
+//	}
 
 	private void assertMatch(Pattern pattern, String toMatch) {
 		Assert.assertTrue("Pattern: "+pattern+"<->"+toMatch,pattern.matcher(toMatch).find());
