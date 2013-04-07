@@ -36,7 +36,7 @@ public class GenericStreamProcessor {
 		_defaultLineProcessor = defaultLineProcessor;
 	}
 
-	public void process(IReader reader) throws IOException {
+	public void process(IRewindableReader reader) throws IOException {
 		Optional<String> possibleLine = reader.nextLine();
 		if (possibleLine.isPresent()) {
 			String line = possibleLine.get();
@@ -50,7 +50,7 @@ public class GenericStreamProcessor {
 		}
 	}
 
-	private void process(IReader reader, String line, Optional<IMatch> match) throws IOException {
+	private void process(IRewindableReader reader, String line, Optional<IMatch> match) throws IOException {
 		List<String> nonMatchingLines = Lists.newArrayList();
 
 		boolean readDone=false;

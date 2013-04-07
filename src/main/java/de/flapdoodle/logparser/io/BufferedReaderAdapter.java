@@ -28,8 +28,9 @@ import java.nio.charset.Charset;
 import com.google.common.base.Optional;
 
 import de.flapdoodle.logparser.IReader;
+import de.flapdoodle.logparser.IRewindableReader;
 
-public class BufferedReaderAdapter implements IReader {
+public class BufferedReaderAdapter implements IRewindableReader {
 
 	private final BufferedReader _reader;
 	private final int _readAheadLimit;
