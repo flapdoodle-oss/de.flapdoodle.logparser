@@ -22,7 +22,6 @@ package de.flapdoodle.logparser.matcher.javalogging;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Optional;
@@ -38,23 +37,21 @@ import de.flapdoodle.logparser.LogEntry;
 import de.flapdoodle.logparser.io.StringListReaderAdapter;
 import de.flapdoodle.logparser.matcher.CustomPatterns;
 import de.flapdoodle.logparser.regex.Patterns;
-import de.flapdoodle.logparser.stacktrace.StackTrace;
 
 public class StandardJavaLoggingMatcher implements IMatcher<LogEntry> {
 
-	//	NamedPatterns _firstLine = new NamedPatterns(new NamedPattern("^"), new DatePattern(), new NamedPattern("(\\s+)"),
-	//			new ClassPattern(), new NamedPattern("(\\s+)"), new MethodPattern());
+	private static final String P_DATE = "date";
+	private static final String P_CLASS = "class";
+	private static final String P_METHOD = "method";
+	private static final String P_LEVEL = "level";
+	private static final String P_MESSAGE = "message";
 
-	static Pattern _firstLine = Patterns.join(Patterns.build("^"), Patterns.namedGroup("date", CustomPatterns.Date),
-			Patterns.build("(\\s+)"), Patterns.namedGroup("class", CustomPatterns.Classname), Patterns.build("(\\s+)"),
-			Patterns.namedGroup("method", CustomPatterns.Method));
+	static Pattern _firstLine = Patterns.join(Patterns.build("^"), Patterns.namedGroup(P_DATE, CustomPatterns.Date),
+			Patterns.build("(\\s+)"), Patterns.namedGroup(P_CLASS, CustomPatterns.Classname), Patterns.build("(\\s+)"),
+			Patterns.namedGroup(P_METHOD, CustomPatterns.Method));
 
-	//	NamedPattern _levelPattern = new LevelPattern();
-	//	NamedPatterns _secondLine = new NamedPatterns(new NamedPattern("^"), new LevelPattern(), new NamedPattern("message",
-	//			"(?<message>.*)$"));
-
-	static Pattern _secondLine = Patterns.join(Patterns.build("^"), Patterns.namedGroup("level", CustomPatterns.Levels),
-			Patterns.namedGroup("message", Patterns.build(".*")), Patterns.build("$"));
+	static Pattern _secondLine = Patterns.join(Patterns.build("^"), Patterns.namedGroup(P_LEVEL, CustomPatterns.Levels),
+			Patterns.namedGroup(P_MESSAGE, Patterns.build(".*")), Patterns.build("$"));
 
 	@Override
 	public Optional<IMatch<LogEntry>> match(IReader reader) throws IOException {
@@ -70,7 +67,7 @@ public class StandardJavaLoggingMatcher implements IMatcher<LogEntry> {
 					String secondLine=possibleSecondLine.get();
 					Optional<Map<String, String>> secondMatch = Patterns.match(_secondLine.matcher(secondLine));
 					if (secondMatch.isPresent()) {
-						return Optional.<IMatch<LogEntry>> of(new FullLineMatcher(firstLine,match,secondLine,secondMatch));
+						return Optional.<IMatch<LogEntry>> of(new FullLineMatcher(firstLine,match.get(),secondLine,secondMatch.get()));
 					}
 				}
 			}
@@ -93,13 +90,13 @@ public class StandardJavaLoggingMatcher implements IMatcher<LogEntry> {
 	static class FullLineMatcher implements IMatch<LogEntry> {
 
 		private final String _firstLine;
-		private final Optional<Map<String, String>> _match;
+		private final Map<String, String> _firstMatch;
 		private final String _secondLine;
-		private final Optional<Map<String, String>> _secondMatch;
+		private final Map<String, String> _secondMatch;
 
-		public FullLineMatcher(String firstLine, Optional<Map<String, String>> match, String secondLine, Optional<Map<String,String>> secondMatch) {
+		public FullLineMatcher(String firstLine, Map<String, String> firstMatch, String secondLine, Map<String,String> secondMatch) {
 			_firstLine = firstLine;
-			_match = match;
+			_firstMatch = firstMatch;
 			_secondLine = secondLine;
 			_secondMatch = secondMatch;
 		}
@@ -107,10 +104,10 @@ public class StandardJavaLoggingMatcher implements IMatcher<LogEntry> {
 		@Override
 		public LogEntry process(List<String> lines) throws IOException {
 			System.out.println(_firstLine);
-			System.out.println("--" + _match.get());
+			System.out.println("--" + _firstMatch);
 
 			System.out.println(_secondLine);
-			System.out.println("--" + _secondMatch.get());
+			System.out.println("--" + _secondMatch);
 			
 			if (!lines.isEmpty()) {
 
@@ -144,6 +141,13 @@ public class StandardJavaLoggingMatcher implements IMatcher<LogEntry> {
 //				}
 				
 			}
+			String date=_firstMatch.get(P_DATE);
+			String classname=_firstMatch.get(P_CLASS);
+			String method=_firstMatch.get(P_METHOD);
+			
+			String level=_secondMatch.get(P_LEVEL);
+			String message=_secondMatch.get(P_MESSAGE);
+			
 			return new LogEntry();
 		}
 	}
