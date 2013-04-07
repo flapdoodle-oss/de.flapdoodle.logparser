@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,10 +22,12 @@ package de.flapdoodle.logparser.matcher.javalogging;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Optional;
 
+import de.flapdoodle.logparser.IMatch;
 import de.flapdoodle.logparser.IMatcher;
 import de.flapdoodle.logparser.matcher.CustomPatterns;
 import de.flapdoodle.logparser.regex.Patterns;
@@ -36,7 +38,7 @@ public class StandardJavaLoggingMatcher implements IMatcher {
 	//	NamedPatterns _firstLine = new NamedPatterns(new NamedPattern("^"), new DatePattern(), new NamedPattern("(\\s+)"),
 	//			new ClassPattern(), new NamedPattern("(\\s+)"), new MethodPattern());
 
-	Pattern _firstLine = Patterns.join(Patterns.build("^"), Patterns.namedGroup("date", CustomPatterns.Date),
+	static Pattern _firstLine = Patterns.join(Patterns.build("^"), Patterns.namedGroup("date", CustomPatterns.Date),
 			Patterns.build("(\\s+)"), Patterns.namedGroup("class", CustomPatterns.Classname), Patterns.build("(\\s+)"),
 			Patterns.namedGroup("method", CustomPatterns.Method));
 
@@ -44,14 +46,18 @@ public class StandardJavaLoggingMatcher implements IMatcher {
 	//	NamedPatterns _secondLine = new NamedPatterns(new NamedPattern("^"), new LevelPattern(), new NamedPattern("message",
 	//			"(?<message>.*)$"));
 
-	Pattern _secondLine = Patterns.join(Patterns.build("^"), Patterns.namedGroup("level", CustomPatterns.Levels),
-			Patterns.namedGroup("message", Patterns.build(".*")),Patterns.build("$"));
+	static Pattern _secondLine = Patterns.join(Patterns.build("^"), Patterns.namedGroup("level", CustomPatterns.Levels),
+			Patterns.namedGroup("message", Patterns.build(".*")), Patterns.build("$"));
 
 	@Override
-	public boolean match(String firstLine) {
+	public Optional<IMatch> match(String firstLine) {
 		//		int currentPosition = 0;
 
-		return Patterns.find(_firstLine,firstLine);
+		Optional<Map<String, String>> match = Patterns.match(_firstLine.matcher(firstLine));
+		if (match.isPresent()) {
+			return Optional.<IMatch> of(new FullLineMatcher(firstLine,match));
+		}
+		return Optional.absent();
 		//		for (NamedPattern p : _patterns) {
 		//			Matcher matcher = p.matcher(firstLine);
 		//			if (matcher.find(currentPosition)) {
@@ -66,33 +72,39 @@ public class StandardJavaLoggingMatcher implements IMatcher {
 		//		}
 	}
 
-	@Override
-	public void process(List<String> lines) throws IOException {
-		String firstLine = lines.get(0);
-		Optional<Map<String, String>> match = Patterns.match(_firstLine.matcher(firstLine));
-		if (!match.isPresent())
-			throw new IllegalArgumentException("Could not parse " + firstLine);
+	static class FullLineMatcher implements IMatch {
 
-		if (lines.size() > 1) {
+		private final String _firstLine;
+		private final Optional<Map<String, String>> _match;
 
-			String secondLine = lines.get(1);
-			Optional<Map<String, String>> secondMatch = Patterns.match(_secondLine.matcher(secondLine));
+		public FullLineMatcher(String firstLine, Optional<Map<String, String>> match) {
+			_firstLine = firstLine;
+			_match = match;
+		}
 
-			System.out.println(firstLine);
-			System.out.println("--" + match.get());
+		@Override
+		public void process(List<String> lines) throws IOException {
+			if (!lines.isEmpty()) {
 
-			System.out.println(secondLine);
-			System.out.println("--" + secondMatch.get());
+				String secondLine = lines.get(0);
+				Optional<Map<String, String>> secondMatch = Patterns.match(_secondLine.matcher(secondLine));
 
-			List<String> content = lines.subList(2, lines.size());
+				System.out.println(_firstLine);
+				System.out.println("--" + _match.get());
 
-			Optional<StackTrace> stacktrace = StackTraceParser.parse(content);
-			if (stacktrace.isPresent()) {
-				System.out.println(">> stacktrace found: " + stacktrace.get());
-			} else {
+				System.out.println(secondLine);
+				System.out.println("--" + secondMatch.get());
 
-				for (String line : content) {
-					System.out.println(">> " + line);
+				List<String> content = lines.subList(1, lines.size());
+
+				Optional<StackTrace> stacktrace = StackTraceParser.parse(content);
+				if (stacktrace.isPresent()) {
+					System.out.println(">> stacktrace found: " + stacktrace.get());
+				} else {
+
+					for (String line : content) {
+						System.out.println(">> " + line);
+					}
 				}
 			}
 		}

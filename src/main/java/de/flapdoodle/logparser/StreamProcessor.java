@@ -43,17 +43,17 @@ public final class StreamProcessor {
 			if (optLine.isPresent()) {
 
 				String line = optLine.get();
-				Optional<IMatcher> match = firstMatch(line);
+				Optional<IMatch> match = firstMatch(line);
 				if (match.isPresent()) {
 					
-					List<String> allLines=Lists.newArrayList(line);
+					List<String> allLines=Lists.newArrayList();
 					
 					boolean readAheadDone=false;
 					do {
 						reader.setMarker();
 						Optional<String> readAheadLine = reader.nextLine();
 						if (readAheadLine.isPresent()) {
-							Optional<IMatcher> readAheadMatch = firstMatch(readAheadLine.get());
+							Optional<IMatch> readAheadMatch = firstMatch(readAheadLine.get());
 							if (!readAheadMatch.isPresent()) {
 								allLines.add(readAheadLine.get());
 							} else {
@@ -76,10 +76,11 @@ public final class StreamProcessor {
 		} while (!eof);
 	}
 
-	private Optional<IMatcher> firstMatch(String line) {
+	private Optional<IMatch> firstMatch(String line) {
 		for (IMatcher matcher : _matcher) {
-			if (matcher.match(line)) {
-				return Optional.of(matcher);
+			Optional<IMatch> match = matcher.match(line);
+			if (match.isPresent()) {
+				return match;
 			}
 		}
 		return Optional.absent();
