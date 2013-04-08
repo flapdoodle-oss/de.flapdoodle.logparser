@@ -21,20 +21,22 @@ package de.flapdoodle.logparser.stacktrace;
 
 import java.util.List;
 
-public class Cause {
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
-	private final Cause _cause;
-	private final List<At> _stack;
-	private final ExceptionAndMessage _exceptionAndMessage;
+public class CauseBy extends AbstractStackFrame {
+
 	private final More _more;
 
-	public Cause(ExceptionAndMessage exceptionAndMessage, List<At> stack, Cause cause, More more) {
-		_exceptionAndMessage = exceptionAndMessage;
-		_cause = cause;
-		_stack = stack;
+	public CauseBy(ExceptionAndMessage exceptionAndMessage, List<At> stack, CauseBy cause, More more) {
+		super(exceptionAndMessage,stack,cause);
 		_more = more;
 	}
 
+	public Optional<More> more() {
+		return Optional.fromNullable(_more);
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();

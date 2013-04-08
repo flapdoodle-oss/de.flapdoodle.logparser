@@ -27,7 +27,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 import de.flapdoodle.logparser.stacktrace.At;
-import de.flapdoodle.logparser.stacktrace.Cause;
+import de.flapdoodle.logparser.stacktrace.CauseBy;
 import de.flapdoodle.logparser.stacktrace.ExceptionAndMessage;
 import de.flapdoodle.logparser.stacktrace.More;
 import de.flapdoodle.logparser.stacktrace.StackTrace;
@@ -70,7 +70,7 @@ public final class StackTraceParser {
 					ExceptionAndMessage outerException = new ExceptionAndMessage(classname(exmatcher), message(exmatcher));
 
 					List<At> stack = Lists.newArrayList();
-					Cause cause=null;
+					CauseBy cause=null;
 
 					for (int i = 1, s = stacktraceLines.size(); i < s; i++) {
 						String line = stacktraceLines.get(i);
@@ -97,9 +97,9 @@ public final class StackTraceParser {
 		return Optional.absent();
 	}
 
-	private static Cause getCause(Matcher match, List<String> left) {
+	private static CauseBy getCause(Matcher match, List<String> left) {
 		List<At> stack = Lists.newArrayList();
-		Cause cause=null;
+		CauseBy cause=null;
 		More more=null;
 		
 		for (int i = 0, s = left.size(); i < s; i++) {
@@ -122,7 +122,7 @@ public final class StackTraceParser {
 			}
 		}
 		
-		return new Cause(new ExceptionAndMessage(classname(match), message(match)),stack,cause,more);
+		return new CauseBy(new ExceptionAndMessage(classname(match), message(match)),stack,cause,more);
 	}
 
 	private static String count(Matcher moreMatcher) {

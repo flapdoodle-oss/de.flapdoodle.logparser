@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,8 @@
  * limitations under the License.
  */
 package de.flapdoodle.logparser.stacktrace;
+
+import com.google.common.base.Optional;
 
 public class At {
 
@@ -34,9 +36,27 @@ public class At {
 				? Integer.valueOf(line)
 				: null;
 	}
-	
+
+	public String classname() {
+		return _classname;
+	}
+
+	public String method() {
+		return _method;
+	}
+
+	public Optional<String> file() {
+		return Optional.fromNullable(_file);
+	}
+
+	public Optional<Integer> line() {
+		return Optional.fromNullable(_line);
+	}
+
 	@Override
 	public String toString() {
-		return "\tat "+_classname+"."+_method+"("+(((_file!=null) && (_line!=null)) ? ""+_file+":"+_line : "???")+")"; 
+		return "\tat " + _classname + "." + _method + "(" + (((_file != null) && (_line != null))
+				? "" + _file + ":" + _line
+				: "???") + ")";
 	}
 }

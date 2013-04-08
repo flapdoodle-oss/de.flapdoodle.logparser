@@ -19,7 +19,40 @@
  */
 package de.flapdoodle.logparser;
 
+import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
 
 public class LogEntry {
+	
+	private final ImmutableMap<String, String> _attributes;
+
+	public LogEntry(Map<String, String>... attributes) {
+		_attributes = ImmutableMap.copyOf(join(attributes));
+	}
+	
+	public ImmutableMap<String, String> attributes() {
+		return _attributes;
+	}
+	
+	private Map<String,String> join(Map<String, String>... maps) {
+		Map<String, String> ret = Maps.newHashMap();
+		for (Map<String,String> map : maps) {
+			ret=join(ret,map);
+		}
+		return ret;
+	}
+	
+	private static <K,V> Map<K,V> join(Map<K,V> a,Map<K,V> b) {
+		Map<K, V> ret = Maps.newHashMap(a);
+		ret.putAll(b);
+		if (ret.size()!=a.size()+b.size()) {
+			throw new RuntimeException("Map contains same keys: "+Sets.intersection(a.keySet(), b.keySet()));
+		}
+		return b;
+	}
 
 }

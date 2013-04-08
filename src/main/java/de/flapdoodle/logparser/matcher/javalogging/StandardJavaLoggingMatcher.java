@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import de.flapdoodle.logparser.GenericStreamProcessor;
 import de.flapdoodle.logparser.ILineProcessor;
@@ -36,7 +37,10 @@ import de.flapdoodle.logparser.IStreamListener;
 import de.flapdoodle.logparser.LogEntry;
 import de.flapdoodle.logparser.io.StringListReaderAdapter;
 import de.flapdoodle.logparser.matcher.CustomPatterns;
+import de.flapdoodle.logparser.matcher.stacktrace.StackTraceMatcher;
 import de.flapdoodle.logparser.regex.Patterns;
+import de.flapdoodle.logparser.stacktrace.AbstractStackFrame;
+import de.flapdoodle.logparser.stacktrace.StackTrace;
 
 public class StandardJavaLoggingMatcher implements IMatcher<LogEntry> {
 
@@ -114,14 +118,14 @@ public class StandardJavaLoggingMatcher implements IMatcher<LogEntry> {
 //				String secondLine = lines.get(0);
 //				Optional<Map<String, String>> secondMatch = Patterns.match(_secondLine.matcher(secondLine));
 
-				GenericStreamProcessor<String> contentProcessor = new GenericStreamProcessor<String>(Lists.<IMatcher<String>>newArrayList(new StackTraceMatcher()), new ILineProcessor() {
+				GenericStreamProcessor<StackTrace> contentProcessor = new GenericStreamProcessor<StackTrace>(Lists.<IMatcher<StackTrace>>newArrayList(new StackTraceMatcher()), new ILineProcessor() {
 					
 					@Override
 					public void processLine(String line) {
 						System.out.println(">>" + line);
 					}
-				},new IStreamListener<String>() {
-					public void entry(String value) {
+				},new IStreamListener<StackTrace>() {
+					public void entry(StackTrace value) {
 						System.out.println("Entry:[" + value+"]");
 					};
 				});
@@ -141,14 +145,8 @@ public class StandardJavaLoggingMatcher implements IMatcher<LogEntry> {
 //				}
 				
 			}
-			String date=_firstMatch.get(P_DATE);
-			String classname=_firstMatch.get(P_CLASS);
-			String method=_firstMatch.get(P_METHOD);
 			
-			String level=_secondMatch.get(P_LEVEL);
-			String message=_secondMatch.get(P_MESSAGE);
-			
-			return new LogEntry();
+			return new LogEntry(_firstMatch,_secondMatch);
 		}
 	}
 	

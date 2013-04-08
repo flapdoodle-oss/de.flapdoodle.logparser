@@ -63,7 +63,7 @@ public class Patterns {
 		return PATTERN_NAME_SET_EXTRACTOR.names(pattern);
 	}
 	
-	public static boolean find(Pattern pattern, String input) {
+	public static boolean find(Pattern pattern, CharSequence input) {
 		return pattern.matcher(input).find();
 	}
 	
@@ -71,7 +71,8 @@ public class Patterns {
 		if (matcher.find()) {
 			Map<String, String> map = Maps.newHashMap();
 			for (String name : names(matcher.pattern())) {
-				map.put(name, matcher.group(name));
+				String value = matcher.group(name);
+				if (value!=null) map.put(name, value);
 			}
 			return Optional.of(map);
 		}
@@ -98,6 +99,18 @@ public class Patterns {
 		return build(asStrings(patterns));
 	}
 
+	public static Pattern group(Pattern... patterns) {
+		return build(join("(", asStrings(asCollection(patterns)), ")"));
+	}
+	
+	public static Pattern group(String... patterns) {
+		return build(join("(", asCollection(patterns), ")"));
+	}
+	
+	public static Pattern namedGroup(String name, String... patterns) {
+		return build(join(asCollection("(?<", name, ">"), asCollection(patterns), asCollection(")")));
+	}
+	
 	public static Pattern namedGroup(String name, Pattern... patterns) {
 		return build(join(asCollection("(?<", name, ">"), asStrings(asCollection(patterns)), asCollection(")")));
 	}

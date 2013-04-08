@@ -19,6 +19,7 @@
  */
 package de.flapdoodle.logparser.stacktrace;
 
+
 public class ExceptionAndMessage {
 
 	private final String _exception;
@@ -27,6 +28,14 @@ public class ExceptionAndMessage {
 	public ExceptionAndMessage(String exception, String message) {
 		_exception = exception;
 		_message = message;
+	}
+	
+	public String exceptionClass() {
+		return _exception;
+	}
+	
+	public String message() {
+		return _message;
 	}
 	
 	@Override
