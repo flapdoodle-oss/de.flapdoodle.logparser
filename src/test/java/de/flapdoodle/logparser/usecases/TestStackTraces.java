@@ -31,12 +31,12 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 import de.flapdoodle.logparser.GenericStreamProcessor;
 import de.flapdoodle.logparser.IMatcher;
 import de.flapdoodle.logparser.IRewindableReader;
-import de.flapdoodle.logparser.IStreamListener;
 import de.flapdoodle.logparser.io.BufferedReaderAdapter;
 import de.flapdoodle.logparser.io.Streams;
 import de.flapdoodle.logparser.io.WriteToConsoleLineProcessor;
@@ -44,6 +44,7 @@ import de.flapdoodle.logparser.matcher.stacktrace.StackTraceMatcher;
 import de.flapdoodle.logparser.stacktrace.AbstractStackFrame;
 import de.flapdoodle.logparser.stacktrace.At;
 import de.flapdoodle.logparser.stacktrace.StackTrace;
+import de.flapdoodle.logparser.streamlistener.OnceAndOnlyOnceStreamListener;
 
 public class TestStackTraces {
 
@@ -61,7 +62,9 @@ public class TestStackTraces {
 			streamProcessor.process(reader);
 		}
 		
-		StackTrace stackTrace = stackListener.value();
+		Optional<StackTrace> chanceOfStackTrace = stackListener.value();
+		assertTrue(chanceOfStackTrace.isPresent());
+		StackTrace stackTrace=chanceOfStackTrace.get();
 		
 		assertNotNull(stackTrace);
 		assertNotNull(stackTrace.cause().isPresent());
@@ -76,25 +79,6 @@ public class TestStackTraces {
 		At at = rootCause.firstAt().get();
 		assertEquals("rootCause.at","de.flapdoodle.logparser.usecases.TestJavaLogging",at.classname());
 		assertEquals("rootCause.at","inner",at.method());
-	}
-	
-	static class OnceAndOnlyOnceStreamListener<T> implements IStreamListener<T> {
-
-		boolean firstCall=true;
-		private T _value;
-
-		@Override
-		public void entry(T value) {
-			if (!firstCall) throw new IllegalArgumentException("called more than once");
-			
-			firstCall=false;
-			_value=value;
-		}
-
-		public T value() {
-			return _value;
-		}
-		
 	}
 
 }

@@ -19,26 +19,49 @@
  */
 package de.flapdoodle.logparser;
 
+import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import de.flapdoodle.logparser.stacktrace.StackTrace;
+
 
 public class LogEntry {
 	
+	private final ImmutableList<String> _source;
 	private final ImmutableMap<String, String> _attributes;
+	private final Optional<StackTrace> _stackTrace;
+	private final ImmutableList<String> _messages;
 
-	public LogEntry(Map<String, String>... attributes) {
-		_attributes = ImmutableMap.copyOf(join(attributes));
+	public LogEntry(List<String> source, Map<String, String> attributes, Optional<StackTrace> stackTrace, List<String> messages) {
+		_source = ImmutableList.copyOf(source);
+		_attributes = ImmutableMap.copyOf(attributes);
+		_stackTrace = stackTrace;
+		_messages = ImmutableList.copyOf(messages);
 	}
 	
 	public ImmutableMap<String, String> attributes() {
 		return _attributes;
 	}
 	
-	private Map<String,String> join(Map<String, String>... maps) {
+	public Optional<StackTrace> stackTrace() {
+		return _stackTrace;
+	}
+	
+	public ImmutableList<String> messages() {
+		return _messages;
+	}
+	
+	public ImmutableList<String> source() {
+		return _source;
+	}
+	
+	public static Map<String,String> join(Map<String, String>... maps) {
 		Map<String, String> ret = Maps.newHashMap();
 		for (Map<String,String> map : maps) {
 			ret=join(ret,map);
