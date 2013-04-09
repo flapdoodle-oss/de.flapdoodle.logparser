@@ -32,7 +32,9 @@ public class GenericStreamProcessor<T> {
 	private final ILineProcessor _defaultLineProcessor;
 	private final IStreamListener<T> _listener;
 
-	public GenericStreamProcessor(Collection<IMatcher<T>> matcher, ILineProcessor defaultLineProcessor,IStreamListener<T> listener) {
+    private static final int OFFSET = 1000;
+
+    public GenericStreamProcessor(Collection<IMatcher<T>> matcher, ILineProcessor defaultLineProcessor,IStreamListener<T> listener) {
 		_matcher = matcher;
 		_defaultLineProcessor = defaultLineProcessor;
 		_listener = listener;
@@ -61,6 +63,7 @@ public class GenericStreamProcessor<T> {
 
 		boolean readDone = false;
         int lines=0;
+        int showNumberAt=lines+OFFSET;
 
 		do {
 			Optional<IMatch<T>> nextMatch = firstMatch(reader);
@@ -80,7 +83,10 @@ public class GenericStreamProcessor<T> {
 				}
 			}
             lines++;
-            System.out.print("\r"+lines);
+            if (lines>=showNumberAt) {
+                System.out.print("\r"+lines);
+                showNumberAt=lines+OFFSET;
+            }
         } while (!readDone);
 	}
 
