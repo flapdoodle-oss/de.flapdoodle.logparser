@@ -11,7 +11,7 @@
 	<groupId>de.flapdoodle</groupId>
 	<artifactId>de.flapdoodle.logparser</artifactId>
 	<name>Flapdoodle Log Parser</name>
-	<version>1.0</version>
+	<version>1.1-SNAPSHOT</version>
 
 	<description>read any java log format and process it</description>
 	<url>http://github.com/flapdoodle-oss/de.flapdoodle.logparser</url>
