@@ -2,6 +2,7 @@ target
 temp/
 velocity.log
 *~
+*.iml
 .classpath
 .project
 .settings
