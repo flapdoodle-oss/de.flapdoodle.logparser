@@ -19,7 +19,7 @@ Stable (Maven Central Repository, Released: 09.04.2013 - wait 24hrs for [maven c
 	<dependency>
 		<groupId>de.flapdoodle</groupId>
 		<artifactId>de.flapdoodle.logparser</artifactId>
-		<version>1.0</version>
+		<version>1.1</version>
 	</dependency>
 
 Snapshots (Repository http://oss.sonatype.org/content/repositories/snapshots)
@@ -27,12 +27,17 @@ Snapshots (Repository http://oss.sonatype.org/content/repositories/snapshots)
 	<dependency>
 		<groupId>de.flapdoodle</groupId>
 		<artifactId>de.flapdoodle.logparser</artifactId>
-		<version>1.1-SNAPSHOT</version>
+		<version>1.2-SNAPSHOT</version>
 	</dependency>
 
 ### Changelog
 
 #### 1.1 (SNAPSHOT)
+
+#### 1.2
+
+- major refactoring
+- multi line message stacktrace support
 
 #### 1.0
 
