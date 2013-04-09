@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,7 +31,7 @@ public class StringListReaderAdapter implements IRewindableReader {
 
 	private final List<String> _lines;
 	int _idx = 0;
-	int _marker=-1;
+	int _marker = -1;
 
 	public StringListReaderAdapter(List<String> lines) {
 		_lines = ImmutableList.copyOf(lines);
@@ -46,24 +46,25 @@ public class StringListReaderAdapter implements IRewindableReader {
 		}
 		return Optional.absent();
 	}
-	
+
 	@Override
 	public Optional<String> lastLine() {
-		if ((_idx>0) && (_idx-1 < _lines.size())) {
-			return Optional.of(_lines.get(_idx-1));
+		if ((_idx > 0) && (_idx - 1 < _lines.size())) {
+			return Optional.of(_lines.get(_idx - 1));
 		}
 		return Optional.absent();
 	}
 
 	@Override
 	public synchronized void setMarker() throws IOException {
-		_marker=_idx;
+		_marker = _idx;
 	}
 
 	@Override
 	public synchronized void jumpToMarker() throws IOException {
-		if (_marker==-1) throw new IOException("marker not set");
-		_idx=_marker;
+		if (_marker == -1)
+			throw new IOException("marker not set");
+		_idx = _marker;
 	}
 
 }

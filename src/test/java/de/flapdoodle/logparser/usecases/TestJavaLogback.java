@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,7 @@ package de.flapdoodle.logparser.usecases;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import de.flapdoodle.logparser.GenericStreamProcessor;
+import de.flapdoodle.logparser.StreamProcessor;
 import de.flapdoodle.logparser.IMatcher;
 import de.flapdoodle.logparser.IRewindableReader;
 import de.flapdoodle.logparser.LogEntry;
@@ -43,44 +43,44 @@ import java.util.regex.Pattern;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
-
 public class TestJavaLogback {
 
-	
 	@Test
 	public void readLogfile() throws IOException {
 		CollectingStreamListener<LogEntry> streamListener = new CollectingStreamListener<LogEntry>();
 		WriteToListLineProcessor defaultLineProcessor = new WriteToListLineProcessor();
-		
-		try (InputStream stream = getClass().getResourceAsStream("java-logback-stacktrace-sample.txt")) {
-			IRewindableReader reader=new BufferedReaderAdapter(stream, Charsets.UTF_8,1024);
 
-            String regex = "(?<date>\\d+-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d,\\d\\d\\d) (?<level>[A-Z]+) [a-z]+-[a-z]+-\\d+ \\[\\d+\\] \\[\\d+/[A-Z0-9]+-[a-z]\\d.[a-z]+\\d+[a-z]/\\d+\\] (?<class>([a-zA-Z]+)((\\.|\\$)[a-zA-Z][a-zA-Z\\$0-9]*)*):(?<lineNr>\\d+): (?<message>.*)$";
-            Pattern firstLinePattern= Pattern.compile(regex);
-            GenericStreamProcessor<LogEntry> streamProcessor=new GenericStreamProcessor<LogEntry>(Lists.<IMatcher<LogEntry>>newArrayList(new GenericLogMatcher(firstLinePattern)), defaultLineProcessor,streamListener);
-			
+		try (InputStream stream = getClass().getResourceAsStream("java-logback-stacktrace-sample.txt")) {
+			IRewindableReader reader = new BufferedReaderAdapter(stream, Charsets.UTF_8, 1024);
+
+			String regex = "(?<date>\\d+-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d,\\d\\d\\d) (?<level>[A-Z]+) [a-z]+-[a-z]+-\\d+ \\[\\d+\\] \\[\\d+/[A-Z0-9]+-[a-z]\\d.[a-z]+\\d+[a-z]/\\d+\\] (?<class>([a-zA-Z]+)((\\.|\\$)[a-zA-Z][a-zA-Z\\$0-9]*)*):(?<lineNr>\\d+): (?<message>.*)$";
+			Pattern firstLinePattern = Pattern.compile(regex);
+			StreamProcessor<LogEntry> streamProcessor = new StreamProcessor<LogEntry>(
+					Lists.<IMatcher<LogEntry>> newArrayList(new GenericLogMatcher(firstLinePattern)), defaultLineProcessor,
+					streamListener);
+
 			streamProcessor.process(reader);
 		}
-		
-		assertTrue("no lines to console: "+defaultLineProcessor.lines(),defaultLineProcessor.lines().isEmpty());
+
+		assertTrue("no lines to console: " + defaultLineProcessor.lines(), defaultLineProcessor.lines().isEmpty());
 		ImmutableList<LogEntry> entries = streamListener.entries();
-		
-		assertEquals("Log Lines",1,entries.size());
 
-        LogEntry logEntry = entries.get(0);
+		assertEquals("Log Lines", 1, entries.size());
 
-        AbstractStackFrame rootCause = logEntry.stackTrace().get().rootCause();
-		assertEquals("rootCause","java.lang.NullPointerException",rootCause.exception().exceptionClass());
-		
+		LogEntry logEntry = entries.get(0);
+
+		AbstractStackFrame rootCause = logEntry.stackTrace().get().rootCause();
+		assertEquals("rootCause", "java.lang.NullPointerException", rootCause.exception().exceptionClass());
+
 		At rootCauseAt = rootCause.firstAt().get();
-		assertEquals("firstRootCause","de.flapdoodle.stuff.commons.lang.BrowserWrapper",rootCauseAt.classname());
-        assertEquals("firstRootCause","isPompey",rootCauseAt.method());
+		assertEquals("firstRootCause", "de.flapdoodle.stuff.commons.lang.BrowserWrapper", rootCauseAt.classname());
+		assertEquals("firstRootCause", "isPompey", rootCauseAt.method());
 
-        CauseBy causeBy = logEntry.stackTrace().get().cause().get();
+		CauseBy causeBy = logEntry.stackTrace().get().cause().get();
 
-        System.out.println(logEntry.stackTrace().get().toString());
+		System.out.println(logEntry.stackTrace().get().toString());
 
-        More more = causeBy.firstStackLines().more().get();
-        assertEquals("moreLines", 64, more.count());
-    }
+		More more = causeBy.firstStackLines().more().get();
+		assertEquals("moreLines", 64, more.count());
+	}
 }

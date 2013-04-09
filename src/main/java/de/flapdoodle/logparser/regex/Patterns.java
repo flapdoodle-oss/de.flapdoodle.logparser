@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,52 +40,52 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Patterns {
-	static final Logger _logger=Logger.getLogger(Pattern.class.getName());
-	
-	
+
+	static final Logger _logger = Logger.getLogger(Pattern.class.getName());
+
 	static final IPatternNameSetExtractor PATTERN_NAME_SET_EXTRACTOR;
 	static {
 		IPatternNameSetExtractor instance = new ParsePatternForGroupNamesNameSetExtractor();
 		try {
 			instance = new ProtectedMethodCallSetExtractor();
 		} catch (RuntimeException ex) {
-			_logger.log(Level.WARNING,"choose pattern name set extractor",ex);
+			_logger.log(Level.WARNING, "choose pattern name set extractor", ex);
 		}
-		PATTERN_NAME_SET_EXTRACTOR=instance;
+		PATTERN_NAME_SET_EXTRACTOR = instance;
 	}
 
 	private Patterns() {
 		// no instance
 	}
 
-
 	public static Set<String> names(Pattern pattern) {
 		return PATTERN_NAME_SET_EXTRACTOR.names(pattern);
 	}
-	
+
 	public static boolean find(Pattern pattern, CharSequence input) {
 		return pattern.matcher(input).find();
 	}
-	
-	public static Optional<Map<String, String>> match(Matcher matcher) {
-        Set<String> names = names(matcher.pattern());
 
-        return match(matcher, names);
+	public static Optional<Map<String, String>> match(Matcher matcher) {
+		Set<String> names = names(matcher.pattern());
+
+		return match(matcher, names);
 	}
 
-    public static Optional<Map<String, String>> match(Matcher matcher, Set<String> names) {
-        if (matcher.find()) {
-            Map<String, String> map = Maps.newHashMap();
-            for (String name : names) {
+	public static Optional<Map<String, String>> match(Matcher matcher, Set<String> names) {
+		if (matcher.find()) {
+			Map<String, String> map = Maps.newHashMap();
+			for (String name : names) {
 				String value = matcher.group(name);
-				if (value!=null) map.put(name, value);
+				if (value != null)
+					map.put(name, value);
 			}
 			return Optional.of(map);
 		}
-        return Optional.absent();
-    }
+		return Optional.absent();
+	}
 
-    public static Pattern build(Collection<String> parts) {
+	public static Pattern build(Collection<String> parts) {
 		StringBuilder sb = new StringBuilder();
 		for (String part : parts) {
 			sb.append(part);
@@ -108,19 +108,19 @@ public class Patterns {
 	public static Pattern group(Pattern... patterns) {
 		return build(join("(", asStrings(asCollection(patterns)), ")"));
 	}
-	
+
 	public static Pattern group(String... patterns) {
 		return build(join("(", asCollection(patterns), ")"));
 	}
-	
+
 	public static Pattern namedGroup(String name, String... patterns) {
 		return build(join(asCollection("(?<", name, ">"), asCollection(patterns), asCollection(")")));
 	}
-	
+
 	public static Pattern namedGroup(String name, Pattern... patterns) {
 		return build(join(asCollection("(?<", name, ">"), asStrings(asCollection(patterns)), asCollection(")")));
 	}
-	
+
 	private static Collection<String> asStrings(Collection<Pattern> patterns) {
 		return Collections2.transform(patterns, new Function<Pattern, String>() {
 
@@ -155,33 +155,34 @@ public class Patterns {
 
 	@VisibleForTesting
 	protected static interface IPatternNameSetExtractor {
+
 		Set<String> names(Pattern pattern);
 	}
-	
+
 	@VisibleForTesting
 	protected static class ParsePatternForGroupNamesNameSetExtractor implements IPatternNameSetExtractor {
 
 		final Pattern GROUP_NAMES_PATTERN = Pattern.compile("\\?\\<([a-zA-Z0-9]+)\\>");
-		
+
 		protected Set<String> namesFallback(Pattern pattern) {
-			Set<String> ret=Sets.newHashSet();
+			Set<String> ret = Sets.newHashSet();
 			Matcher groupNamesMatcher = GROUP_NAMES_PATTERN.matcher(pattern.pattern());
 			while (groupNamesMatcher.find()) {
 				ret.add(groupNamesMatcher.group(1));
 			}
 			return ret;
 		}
-		
+
 		@Override
 		public Set<String> names(Pattern pattern) {
 			return ImmutableSet.copyOf(namesFallback(pattern));
 		}
-		
+
 	}
-	
+
 	@VisibleForTesting
 	protected static class ProtectedMethodCallSetExtractor implements IPatternNameSetExtractor {
-		
+
 		final Method PATTERN_NAMED_GROUP_METHOD;
 		{
 			try {
@@ -191,7 +192,7 @@ public class Patterns {
 				throw new RuntimeException(e);
 			}
 		}
-		
+
 		private Map<String, Integer> callProtectedNamedGroupsMethod(Pattern pattern) {
 			try {
 				return (Map<String, Integer>) PATTERN_NAMED_GROUP_METHOD.invoke(pattern);
@@ -199,7 +200,7 @@ public class Patterns {
 				throw new RuntimeException(e);
 			}
 		}
-		
+
 		@Override
 		public Set<String> names(Pattern pattern) {
 			return ImmutableSet.copyOf(callProtectedNamedGroupsMethod(pattern).keySet());

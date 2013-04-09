@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,17 +27,17 @@ import org.junit.Test;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
-
 public class TestFirstline {
+
 	@Test
 	public void exceptionAndMessage() {
 		Optional<FirstLine> match = FirstLine.match("java.lang.RuntimeException: middle");
 		assertTrue(match.isPresent());
-		
+
 		ImmutableMap<String, String> attributes = match.get().attributes();
-		
-		assertEquals("exception", "java.lang.RuntimeException",attributes.get("exception"));
-		assertEquals("message", "middle",attributes.get("message"));
+
+		assertEquals("exception", "java.lang.RuntimeException", attributes.get("exception"));
+		assertEquals("message", "middle", attributes.get("message"));
 	}
 
 }

@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 
-
 public abstract class AbstractStackFrame {
 
 	protected final ExceptionAndMessage _exceptionAndMessage;
@@ -32,9 +31,9 @@ public abstract class AbstractStackFrame {
 	protected final CauseBy _cause;
 
 	protected AbstractStackFrame(ExceptionAndMessage exceptionAndMessage, List<StackLines> stackLines, CauseBy cause) {
-        if (stackLines.isEmpty()) {
-            throw new RuntimeException("stacklines emtpy");
-        }
+		if (stackLines.isEmpty()) {
+			throw new RuntimeException("stacklines emtpy");
+		}
 		_exceptionAndMessage = exceptionAndMessage;
 		_cause = cause;
 		_stackLines = ImmutableList.copyOf(stackLines);
@@ -47,9 +46,9 @@ public abstract class AbstractStackFrame {
 	public Optional<CauseBy> cause() {
 		return Optional.fromNullable(_cause);
 	}
-	
+
 	public AbstractStackFrame rootCause() {
-		if (_cause!=null) {
+		if (_cause != null) {
 			return _cause.rootCause();
 		}
 		return this;
@@ -59,11 +58,11 @@ public abstract class AbstractStackFrame {
 		return _stackLines;
 	}
 
-    public Optional<At> firstAt() {
-        return firstStackLines().firstAt();
-    }
+	public Optional<At> firstAt() {
+		return firstStackLines().firstAt();
+	}
 
-    public StackLines firstStackLines() {
-        return _stackLines.get(0);
-    }
+	public StackLines firstStackLines() {
+		return _stackLines.get(0);
+	}
 }
