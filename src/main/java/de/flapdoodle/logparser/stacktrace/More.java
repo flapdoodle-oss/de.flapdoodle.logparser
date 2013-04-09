@@ -26,8 +26,12 @@ public class More {
 	public More(String count) {
 		_count = Integer.valueOf(count);
 	}
-	
-	@Override
+
+    public int count() {
+        return _count;
+    }
+
+    @Override
 	public String toString() {
 		return "\t... "+_count+" more";
 	}

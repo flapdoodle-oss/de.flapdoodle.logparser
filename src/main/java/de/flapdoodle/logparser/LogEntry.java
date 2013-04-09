@@ -19,16 +19,16 @@
  */
 package de.flapdoodle.logparser;
 
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import de.flapdoodle.logparser.stacktrace.StackTrace;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 
 public class LogEntry {
@@ -60,8 +60,16 @@ public class LogEntry {
 	public ImmutableList<String> source() {
 		return _source;
 	}
-	
-	public static Map<String,String> join(Map<String, String>... maps) {
+
+    public static Map<String,String> join(Collection<? extends Map<String, String>> maps) {
+        Map<String, String> ret = Maps.newHashMap();
+        for (Map<String,String> map : maps) {
+            ret=join(ret,map);
+        }
+        return ret;
+    }
+
+    public static Map<String,String> join(Map<String, String>... maps) {
 		Map<String, String> ret = Maps.newHashMap();
 		for (Map<String,String> map : maps) {
 			ret=join(ret,map);

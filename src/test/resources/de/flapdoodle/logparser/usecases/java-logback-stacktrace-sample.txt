@@ -1,4 +1,4 @@
-2013-04-07 11:16:40,909 ERROR worker-ajp-975 [12342/DEADCAFE-a12/123AEF] [2a3] f.c.x.commons.lang.ExceptionUtil:201: [aef1021bc123-20110108-101213-01-sv13b] Some Stacktrace:
+2013-04-07 00:00:01,857 ERROR fuu-plu-123 [4321] [87654321/DEADCAFEDEADCAFEDEADCAFEDEADCAFE-a2.xy12c/4321432198] f.x.u.k.l.s.d.StairwayToHeaven:131: We are all happy people
 org.apache.wicket.WicketRuntimeException: Exception in rendering component: [HtmlHeaderContainer [Component id = _header_0]]
 	at org.apache.wicket.Component.internalRenderComponent(Component.java:2586) ~[wicket-core-1.5.9.jar:1.5.9]
 	at org.apache.wicket.MarkupContainer.onRender(MarkupContainer.java:1530) ~[wicket-core-1.5.9.jar:1.5.9]

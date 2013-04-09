@@ -19,31 +19,26 @@
  */
 package de.flapdoodle.logparser.matcher.javalogging;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import de.flapdoodle.logparser.GenericStreamProcessor;
-import de.flapdoodle.logparser.ILineProcessor;
 import de.flapdoodle.logparser.IMatch;
 import de.flapdoodle.logparser.IMatcher;
 import de.flapdoodle.logparser.IReader;
-import de.flapdoodle.logparser.IStreamListener;
 import de.flapdoodle.logparser.LogEntry;
 import de.flapdoodle.logparser.io.StringListReaderAdapter;
 import de.flapdoodle.logparser.io.WriteToListLineProcessor;
 import de.flapdoodle.logparser.matcher.CustomPatterns;
 import de.flapdoodle.logparser.matcher.stacktrace.StackTraceMatcher;
 import de.flapdoodle.logparser.regex.Patterns;
-import de.flapdoodle.logparser.stacktrace.AbstractStackFrame;
 import de.flapdoodle.logparser.stacktrace.StackTrace;
 import de.flapdoodle.logparser.streamlistener.OnceAndOnlyOnceStreamListener;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 public class StandardJavaLoggingMatcher implements IMatcher<LogEntry> {
 
@@ -118,6 +113,8 @@ public class StandardJavaLoggingMatcher implements IMatcher<LogEntry> {
 //			System.out.println(_secondLine);
 //			System.out.println("--" + _secondMatch);
 
+            List<String> allLines=ImmutableList.<String>builder().add(_firstLine,_secondLine).addAll(lines).build();
+
 			Optional<StackTrace> stackTrace = Optional.absent();
 			List<String> messages = ImmutableList.of();
 
@@ -133,7 +130,7 @@ public class StandardJavaLoggingMatcher implements IMatcher<LogEntry> {
 				messages = contentListener.lines();
 			}
 
-			return new LogEntry(lines, LogEntry.join(_firstMatch, _secondMatch), stackTrace, messages);
+			return new LogEntry(allLines, LogEntry.join(_firstMatch, _secondMatch), stackTrace, messages);
 		}
 	}
 
