@@ -32,9 +32,9 @@ Snapshots (Repository http://oss.sonatype.org/content/repositories/snapshots)
 
 ### Changelog
 
-#### 1.1 (SNAPSHOT)
+#### 1.2 (SNAPSHOT)
 
-#### 1.2
+#### 1.1
 
 - major refactoring
 - multi line message stacktrace support
