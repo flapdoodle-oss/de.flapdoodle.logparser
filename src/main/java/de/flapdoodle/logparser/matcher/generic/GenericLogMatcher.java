@@ -136,7 +136,7 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
                         Lists.<IMatcher<StackTrace>> newArrayList(new StackTraceMatcher()), contentListener, stackTraceListener);
                 try {
                     contentProcessor.process(new StringListReaderAdapter(lines));
-                } catch (IllegalArgumentException iax) {
+                } catch (RuntimeException iax) {
                     System.out.println("-----------------------------------");
                     for (String line : lines) {
                         System.out.println(line);
