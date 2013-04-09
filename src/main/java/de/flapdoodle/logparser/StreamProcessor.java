@@ -47,7 +47,7 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 		boolean eof = false;
 
 		do {
-			Optional<IMatch<T>> match = firstMatch(reader);
+			Optional<IMatch<T>> match = firstMatch(reader,new EmtpyBackBuffer());
 			if (match.isPresent()) {
 				process(reader, match);
 			} else {
@@ -63,13 +63,14 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 
 	private void process(IRewindableReader reader, Optional<IMatch<T>> match) throws IOException {
 		List<String> nonMatchingLines = Lists.newArrayList();
+		IBackBuffer backBuffer=new BackBufferFromList(nonMatchingLines);
 
 		boolean readDone = false;
 		int lines = 0;
 		int showNumberAt = lines + OFFSET;
 
 		do {
-			Optional<IMatch<T>> nextMatch = firstMatch(reader);
+			Optional<IMatch<T>> nextMatch = firstMatch(reader,backBuffer);
 			if (nextMatch.isPresent()) {
 				T result = match.get().process(nonMatchingLines);
 				_listener.entry(result);
@@ -93,10 +94,10 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 		} while (!readDone);
 	}
 
-	private Optional<IMatch<T>> firstMatch(IRewindableReader reader) throws IOException {
+	private Optional<IMatch<T>> firstMatch(IRewindableReader reader,IBackBuffer backBuffer) throws IOException {
 		reader.setMarker();
 		for (IMatcher<T> matcher : _matcher) {
-			Optional<IMatch<T>> match = matcher.match(reader);
+			Optional<IMatch<T>> match = matcher.match(reader,backBuffer);
 			if (match.isPresent()) {
 				return match;
 			} else {
@@ -104,5 +105,29 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 			}
 		}
 		return Optional.absent();
+	}
+	
+	static class BackBufferFromList implements IBackBuffer {
+
+		private final List<String> _lines;
+
+		public BackBufferFromList(List<String> lines) {
+			_lines = lines;
+		}
+		
+		@Override
+		public ImmutableList<String> lastLines() {
+			return ImmutableList.copyOf(Lists.reverse(_lines));
+		}
+		
+	}
+	
+	static class EmtpyBackBuffer implements IBackBuffer {
+
+		@Override
+		public ImmutableList<String> lastLines() {
+			return ImmutableList.of();
+		}
+		
 	}
 }

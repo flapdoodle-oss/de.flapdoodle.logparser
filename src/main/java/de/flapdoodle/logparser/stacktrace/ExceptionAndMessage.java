@@ -19,26 +19,37 @@
  */
 package de.flapdoodle.logparser.stacktrace;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 public class ExceptionAndMessage {
 
 	private final String _exception;
-	private final String _message;
+	private final ImmutableList<String> _messages;
 
-	public ExceptionAndMessage(String exception, String message) {
+	public ExceptionAndMessage(String exception, List<String> messages) {
 		_exception = exception;
-		_message = message;
+		_messages = ImmutableList.copyOf(messages);
 	}
 
 	public String exceptionClass() {
 		return _exception;
 	}
 
-	public String message() {
-		return _message;
+	public ImmutableList<String> messages() {
+		return _messages;
 	}
 
 	@Override
 	public String toString() {
-		return _exception + ":" + _message;
+		StringBuilder sb=new StringBuilder();
+		sb.append(_exception);
+		sb.append(":");
+		for (String message : _messages) {
+			sb.append(message);
+			sb.append("\n");
+		}
+		return sb.toString();
 	}
 }

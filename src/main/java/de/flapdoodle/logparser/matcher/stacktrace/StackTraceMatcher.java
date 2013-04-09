@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,12 @@ package de.flapdoodle.logparser.matcher.stacktrace;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableBiMap.Builder;
+
+import de.flapdoodle.logparser.IBackBuffer;
 import de.flapdoodle.logparser.IMatch;
 import de.flapdoodle.logparser.IMatcher;
 import de.flapdoodle.logparser.IReader;
@@ -34,15 +38,10 @@ import java.util.List;
 
 public class StackTraceMatcher implements IMatcher<StackTrace> {
 
-	@Override
-	public Optional<IMatch<StackTrace>> match(IReader reader) throws IOException {
-		Optional<String> lastLine = reader.lastLine();
-		if (lastLine.isPresent()) {
-			if (CauseBy.find(lastLine.get())) {
-				return Optional.absent();
-			}
-		}
+	static final int MAX_LOOK_AHEAD = 30;
 
+	@Override
+	public Optional<IMatch<StackTrace>> match(IReader reader, IBackBuffer backBuffer) throws IOException {
 		Optional<String> possibleFirstLine = reader.nextLine();
 		if (possibleFirstLine.isPresent()) {
 			String firstLineAsString = possibleFirstLine.get();
@@ -55,27 +54,54 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 			if (More.find(firstLineAsString)) {
 				return Optional.absent();
 			}
-
-			Optional<String> possibleSecondLine = reader.nextLine();
-			if (possibleSecondLine.isPresent()) {
-				Optional<At> secondLine = At.match(possibleSecondLine.get());
-				if (secondLine.isPresent()) {
-					Optional<FirstLine> firstLine = FirstLine.match(firstLineAsString);
-					if (firstLine.isPresent()) {
-						return Optional.<IMatch<StackTrace>> of(new StackTraceMatch(firstLine.get(), secondLine.get()));
+			if (causeByIn(backBuffer.lastLines())){
+				return Optional.absent();
+			}
+			
+			Optional<FirstLine> firstLine = FirstLine.match(firstLineAsString);
+			if (firstLine.isPresent()) {
+				
+				int leftToTry=MAX_LOOK_AHEAD;
+				List<String> messageLines=Lists.newArrayList();
+				
+				do
+				{
+					leftToTry--;
+					
+					Optional<String> possibleSecondLine = reader.nextLine();
+					if (possibleSecondLine.isPresent()) {
+						Optional<At> secondLine = At.match(possibleSecondLine.get());
+						if (secondLine.isPresent()) {
+							return Optional.<IMatch<StackTrace>> of(new StackTraceMatch(firstLine.get(), messageLines, secondLine.get()));
+						} else {
+							messageLines.add(possibleSecondLine.get());
+						}
+					} else {
+						leftToTry=0;
 					}
 				}
+				while (leftToTry>0);
+				
 			}
 		}
 		return Optional.absent();
+	}
+
+	private boolean causeByIn(ImmutableList<String> lastLines) {
+		for (String line : lastLines) {
+			if (CauseBy.find(line)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	static class StackTraceMatch implements IMatch<StackTrace> {
 
 		private Stack _stack;
 
-		public StackTraceMatch(FirstLine firstLine, At at) {
-			_stack = new Stack(firstLine, at);
+		public StackTraceMatch(FirstLine firstLine,List<String> messages, At at) {
+			_stack = new Stack(firstLine, messages, at);
 		}
 
 		@Override
@@ -84,20 +110,34 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 			IStackContainer stack = _stack;
 			IStackLines stackLines = stack.currentStackLines();
 
+			boolean lastOneWasCauseBy=false;
+			
 			for (String line : lines) {
 				Optional<At> at = At.match(line);
 				if (at.isPresent()) {
+					lastOneWasCauseBy=false;
+					
 					stackLines.add(at.get());
 				} else {
 					Optional<CauseBy> causeBy = CauseBy.match(line);
 					if (causeBy.isPresent()) {
+						lastOneWasCauseBy=true;
+						
 						stack = stack.causeBy(causeBy.get());
 						stackLines = stack.currentStackLines();
 					} else {
 						Optional<More> more = More.match(line);
 						if (more.isPresent()) {
+							lastOneWasCauseBy=false;
+							
 							stackLines.more(more.get());
 							stackLines = stack.newStackLines();
+						} else {
+							if (lastOneWasCauseBy) {
+								stack.addMessage(line);
+							} else {
+								throw new RuntimeException("unknown type of line: "+line);
+							}
 						}
 					}
 				}
@@ -108,13 +148,13 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 	}
 
 	private static StackTrace toStackTrace(List<String> source, Stack stack) {
-		return new StackTrace(source, exceptionAndMessage(stack._firstLine), stackLines(stack.stackLines()),
-				cause(stack.causeBy()));
+		return new StackTrace(source, exceptionAndMessage(stack._firstLine, stack.messages()),
+				stackLines(stack.stackLines()), cause(stack.causeBy()));
 	}
 
 	private static de.flapdoodle.logparser.stacktrace.CauseBy cause(CauseByStack causeBy) {
 		if (causeBy != null) {
-			return new de.flapdoodle.logparser.stacktrace.CauseBy(exceptionAndMessage(causeBy._cause),
+			return new de.flapdoodle.logparser.stacktrace.CauseBy(exceptionAndMessage(causeBy._cause, causeBy.messages()),
 					stackLines(causeBy.stackLines()), cause(causeBy.causeBy()));
 		}
 		return null;
@@ -147,12 +187,14 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 		});
 	}
 
-	private static ExceptionAndMessage exceptionAndMessage(CauseBy causeBy) {
-		return new ExceptionAndMessage(causeBy.exception(), causeBy.message());
+	private static ExceptionAndMessage exceptionAndMessage(CauseBy causeBy, List<String> messages) {
+		return new ExceptionAndMessage(causeBy.exception(), ImmutableList.<String> builder().add(causeBy.message()).addAll(
+				messages).build());
 	}
 
-	private static ExceptionAndMessage exceptionAndMessage(FirstLine firstLine) {
-		return new ExceptionAndMessage(firstLine.exception(), firstLine.message());
+	private static ExceptionAndMessage exceptionAndMessage(FirstLine firstLine, List<String> messages) {
+		return new ExceptionAndMessage(firstLine.exception(),
+				ImmutableList.<String> builder().add(firstLine.message()).addAll(messages).build());
 	}
 
 	static interface IStackLines {
@@ -170,12 +212,15 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 		IStackContainer causeBy(CauseBy causeBy);
 
 		IStackLines currentStackLines();
+
+		void addMessage(String line);
 	}
 
 	static abstract class AbstractStack implements IStackContainer {
 
 		private final List<StackLines> _stackLines = Lists.newArrayList(new StackLines());
 		private CauseByStack _causeBy;
+		private final List<String> _messages = Lists.newArrayList();
 
 		@Override
 		public IStackContainer causeBy(CauseBy causeBy) {
@@ -194,12 +239,25 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 			return ret;
 		}
 
-		public List<StackLines> stackLines() {
+		public ImmutableList<StackLines> stackLines() {
 			return ImmutableList.copyOf(_stackLines);
 		}
 
 		public CauseByStack causeBy() {
 			return _causeBy;
+		}
+
+		@Override
+		public void addMessage(String line) {
+			_messages.add(line);
+		}
+		
+		public void addMessages(List<String> messages) {
+			_messages.addAll(messages);
+		}
+
+		public ImmutableList<String> messages() {
+			return ImmutableList.copyOf(_messages);
 		}
 
 	}
@@ -233,8 +291,9 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 
 		private final FirstLine _firstLine;
 
-		Stack(FirstLine firstLine, At at) {
+		Stack(FirstLine firstLine, List<String> messages, At at) {
 			_firstLine = firstLine;
+			addMessages(messages);
 			currentStackLines().add(at);
 		}
 

@@ -1,4 +1,6 @@
 java.lang.RuntimeException: middle
+and other stuff
+in many lines
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.outer(TestJavaLogging.java:30)
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.stacktraceWithTwoCauses(TestJavaLogging.java:20)
 	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
@@ -24,6 +26,15 @@ java.lang.RuntimeException: middle
 	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:683)
 	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:390)
 	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:197)
+Caused by: java.lang.IllegalArgumentException: java.lang.NullPointerException: without any cause but with a very looooooong message
+java.lang.NullPointerException: java.lang.RuntimeException: without any cause
+any other Text..
+over many many lines
+without any trouble,
+but only if Caused by is before it
+	at de.flapdoodle.logparser.usecases.TestJavaLogging.middle(TestJavaLogging.java:38)
+	at de.flapdoodle.logparser.usecases.TestJavaLogging.outer(TestJavaLogging.java:28)
+	... 24 more
 Caused by: java.lang.IllegalArgumentException: java.lang.NullPointerException: without any cause but with a very looooooong message
 java.lang.NullPointerException: java.lang.RuntimeException: without any cause
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.middle(TestJavaLogging.java:38)

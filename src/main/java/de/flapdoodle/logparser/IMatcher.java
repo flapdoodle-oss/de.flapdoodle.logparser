@@ -25,6 +25,6 @@ import com.google.common.base.Optional;
 
 public interface IMatcher<T> {
 
-	Optional<IMatch<T>> match(IReader reader) throws IOException;
+	Optional<IMatch<T>> match(IReader reader,IBackBuffer backBuffer) throws IOException;
 
 }

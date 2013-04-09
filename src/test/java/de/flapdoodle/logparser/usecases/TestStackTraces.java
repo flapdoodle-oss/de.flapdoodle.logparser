@@ -66,7 +66,7 @@ public class TestStackTraces {
 		assertNotNull(stackTrace.cause().get().cause().isPresent());
 
 		assertEquals("exceptionClass", "java.lang.RuntimeException", stackTrace.exception().exceptionClass());
-		assertEquals("exceptionMessage", "middle", stackTrace.exception().message());
+		assertEquals("exceptionMessage", "[middle]", stackTrace.exception().messages().toString());
 
 		AbstractStackFrame rootCause = stackTrace.rootCause();
 		assertNotNull("rootCause", rootCause);
@@ -99,7 +99,7 @@ public class TestStackTraces {
 		assertNotNull(stackTrace.cause().get().cause().isPresent());
 
 		assertEquals("exceptionClass", "java.lang.RuntimeException", stackTrace.exception().exceptionClass());
-		assertEquals("exceptionMessage", "middle", stackTrace.exception().message());
+		assertEquals("exceptionMessage", "[middle, and other stuff, in many lines]", stackTrace.exception().messages().toString());
 
 		AbstractStackFrame rootCause = stackTrace.rootCause();
 		assertNotNull("rootCause", rootCause);

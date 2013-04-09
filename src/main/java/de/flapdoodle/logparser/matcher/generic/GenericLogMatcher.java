@@ -25,6 +25,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import de.flapdoodle.logparser.IBackBuffer;
 import de.flapdoodle.logparser.StreamProcessor;
 import de.flapdoodle.logparser.IMatch;
 import de.flapdoodle.logparser.IMatcher;
@@ -62,7 +64,7 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
 	}
 
 	@Override
-	public Optional<IMatch<LogEntry>> match(IReader reader) throws IOException {
+	public Optional<IMatch<LogEntry>> match(IReader reader,IBackBuffer backBuffer) throws IOException {
 		List<LineWithMatch> lines = Lists.newArrayList();
 		for (Pattern p : firstLinesPatterns) {
 			Optional<String> possibleLine = reader.nextLine();
@@ -141,12 +143,7 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
 				try {
 					contentProcessor.process(new StringListReaderAdapter(lines));
 				} catch (RuntimeException iax) {
-					System.out.println("-----------------------------------");
-					for (String line : lines) {
-						System.out.println(line);
-					}
-					System.out.println("-----------------------------------");
-					throw iax;
+					throw new StackTraceParseException(asString(lines), iax);
 				}
 
 				stackTrace = stackTraceListener.value();
@@ -156,5 +153,23 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
 			return new LogEntry(allLines, LogEntry.join(attributes), stackTrace, messages);
 		}
 	}
+	
+	static String asString(List<String> lines) {
+		StringBuilder sb=new StringBuilder();
+		sb.append("-----------------------------------\n");
+		for (String line : lines) {
+			sb.append(line);
+			sb.append("\n");
+		}
+		sb.append("-----------------------------------\n");
+		return sb.toString();
+	}
 
+	static class StackTraceParseException extends RuntimeException {
+
+		public StackTraceParseException(String message, Throwable cause) {
+			super(message, cause);
+		}
+		
+	}
 }

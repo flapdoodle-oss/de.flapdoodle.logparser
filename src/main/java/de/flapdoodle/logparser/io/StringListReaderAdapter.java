@@ -48,14 +48,6 @@ public class StringListReaderAdapter implements IRewindableReader {
 	}
 
 	@Override
-	public Optional<String> lastLine() {
-		if ((_idx > 0) && (_idx - 1 < _lines.size())) {
-			return Optional.of(_lines.get(_idx - 1));
-		}
-		return Optional.absent();
-	}
-
-	@Override
 	public synchronized void setMarker() throws IOException {
 		_marker = _idx;
 	}
