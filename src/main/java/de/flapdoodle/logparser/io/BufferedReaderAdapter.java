@@ -34,6 +34,8 @@ public class BufferedReaderAdapter implements IRewindableReader {
 
 	private final BufferedReader _reader;
 	private final int _readAheadLimit;
+	private String _lastLine;
+	private String _lastLineOnMarker;
 
 	public BufferedReaderAdapter(InputStream stream, Charset charset,int readAheadLimit) {
 		_readAheadLimit = readAheadLimit;
@@ -43,17 +45,25 @@ public class BufferedReaderAdapter implements IRewindableReader {
 	@Override
 	public Optional<String> nextLine() throws IOException {
 		String line=_reader.readLine();
+		_lastLine=line;
 		return line!=null ? Optional.of(line) : Optional.<String>absent();
+	}
+	
+	@Override
+	public Optional<String> lastLine() {
+		return Optional.fromNullable(_lastLine);
 	}
 
 	@Override
 	public void setMarker() throws IOException {
 		_reader.mark(_readAheadLimit);
+		_lastLineOnMarker=_lastLine;
 	}
 	
 	@Override
 	public void jumpToMarker() throws IOException {
 		_reader.reset();
+		_lastLine=_lastLineOnMarker;
 	}
 	
 	
