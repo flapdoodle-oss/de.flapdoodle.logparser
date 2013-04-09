@@ -30,7 +30,7 @@ public class OnceAndOnlyOnceStreamListener<T> implements IStreamListener<T> {
 
 	@Override
 	public void entry(T value) {
-		if (!firstCall) throw new IllegalArgumentException("called more than once");
+		if (!firstCall) throw new IllegalArgumentException("called more than once: "+_value);
 		
 		firstCall=false;
 		_value=value;

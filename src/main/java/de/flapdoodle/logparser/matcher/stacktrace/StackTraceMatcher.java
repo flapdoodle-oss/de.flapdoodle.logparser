@@ -45,11 +45,11 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 			if (At.find(firstLineAsString)) {
 				return Optional.absent();
 			}
-			if (More.find(firstLineAsString)) {
-				return Optional.absent();
-			}
+            if (More.find(firstLineAsString)) {
+                return Optional.absent();
+            }
 
-			Optional<String> possibleSecondLine = reader.nextLine();
+            Optional<String> possibleSecondLine = reader.nextLine();
 			if (possibleSecondLine.isPresent()) {
 				Optional<At> secondLine = At.match(possibleSecondLine.get());
 				if (secondLine.isPresent()) {

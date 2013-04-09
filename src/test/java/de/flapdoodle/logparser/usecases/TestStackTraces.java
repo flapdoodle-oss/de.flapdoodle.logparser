@@ -76,4 +76,36 @@ public class TestStackTraces {
 		assertEquals("rootCause.at","inner",at.method());
 	}
 
+    @Test
+    public void readStacktraceWithCausesMultilineMessages() throws IOException {
+
+        OnceAndOnlyOnceStreamListener<StackTrace> stackListener = new OnceAndOnlyOnceStreamListener<StackTrace>();
+
+        try (InputStream stream = getClass().getResourceAsStream("stacktrace-with-causes-multiline.txt")) {
+            IRewindableReader reader = new BufferedReaderAdapter(stream, Charsets.UTF_8, 1024);
+            GenericStreamProcessor<StackTrace> streamProcessor = new GenericStreamProcessor<StackTrace>(
+                    Lists.<IMatcher<StackTrace>> newArrayList(new StackTraceMatcher()), new WriteToConsoleLineProcessor(),
+                    stackListener);
+
+            streamProcessor.process(reader);
+        }
+
+        Optional<StackTrace> chanceOfStackTrace = stackListener.value();
+        assertTrue(chanceOfStackTrace.isPresent());
+        StackTrace stackTrace=chanceOfStackTrace.get();
+
+        assertNotNull(stackTrace);
+        assertNotNull(stackTrace.cause().isPresent());
+        assertNotNull(stackTrace.cause().get().cause().isPresent());
+
+        assertEquals("exceptionClass","java.lang.RuntimeException",stackTrace.exception().exceptionClass());
+        assertEquals("exceptionMessage","middle",stackTrace.exception().message());
+
+        AbstractStackFrame rootCause = stackTrace.rootCause();
+        assertNotNull("rootCause",rootCause);
+        assertTrue(rootCause.firstAt().isPresent());
+        At at = rootCause.firstAt().get();
+        assertEquals("rootCause.at","de.flapdoodle.logparser.usecases.TestJavaLogging",at.classname());
+        assertEquals("rootCause.at","inner",at.method());
+    }
 }
