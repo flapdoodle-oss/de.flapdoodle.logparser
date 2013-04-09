@@ -19,19 +19,21 @@
  */
 package de.flapdoodle.logparser.regex;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import com.sun.org.apache.bcel.internal.generic.NEW;
+import static org.junit.Assert.assertTrue;
 
 public class TestPatterns {
 
@@ -111,4 +113,60 @@ public class TestPatterns {
 		
 		Assert.assertEquals(""+regex,ImmutableSet.of(), Sets.difference(groupNamesNative, groupNamesFallback).immutableCopy());
 	}
+
+
+    @Test
+    public void performanceTests() {
+
+        String regexWithGroups = "(?<date>\\d+-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d,\\d\\d\\d) (?<level>[A-Z]+) [a-z]+-[a-z]+-\\d+ \\[\\d+\\] \\[\\d+/[A-Z0-9]+-[a-z]\\d.[a-z]+\\d+[a-z]/\\d+\\] (?<class>([a-zA-Z]+)((\\.|\\$)[a-zA-Z][a-zA-Z\\$0-9]*)*):(?<lineNr>\\d+): (?<message>.*)$";
+        String regexWithoutGroups = "(\\d+-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d,\\d\\d\\d) ([A-Z]+) [a-z]+-[a-z]+-\\d+ \\[\\d+\\] \\[\\d+/[A-Z0-9]+-[a-z]\\d.[a-z]+\\d+[a-z]/\\d+\\] (([a-zA-Z]+)((\\.|\\$)[a-zA-Z][a-zA-Z\\$0-9]*)*):(\\d+): (.*)$";
+        String curRegex="^(?<date>((19|20)\\d\\d)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01]) ([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]),\\d\\d\\d)"
+                 + " (?<level>INFO|WARN|ERROR)"
+                 + " ([0-9a-zA-Z\\-]+)"
+                 + " \\[\\d*\\] "
+                 + "\\[\\d*/(?<session>(([0-9A-F]+)-n[0-9].bs\\d\\d[a|b])*)/-*[a-f0-9]*\\] "
+                 + "(?<class>([a-zA-Z]+)((\\.|\\$)[a-zA-Z][a-zA-Z\\$0-9]*)*)"
+                 + ":"
+                 + "(?<line>\\d+)"
+                 + ":"
+                 + " (?<message>.*)$";
+
+
+        List<TestSet> testSets= Lists.newArrayList(new TestSet("groups   ",regexWithGroups),new TestSet("no groups",regexWithoutGroups),new TestSet("current",curRegex));
+
+        String line="2013-04-07 00:00:01,857 ERROR fuu-plu-123 [4321] [87654321/DEADCAFEDEADCAFEDEADCAFEDEADCAFE-n2.bs12b/4321432198] f.x.u.k.l.s.d.StairwayToHeaven:131: We are all happy people\n";
+
+        int max=10000;
+
+        for (TestSet ts : testSets) {
+            Pattern p = Pattern.compile(ts.regex);
+            assertTrue(p.matcher(line).find());
+
+            long timeUsed = hamsterRun(max, p, line);
+            System.out.println("TimeUsed("+ts.name+"): "+timeUsed);
+        }
+    }
+
+    static class TestSet {
+        private final String name;
+        private final String regex;
+
+        TestSet(String name, String regex) {
+            this.name = name;
+            this.regex = regex;
+        }
+    }
+
+    private long hamsterRun(int max, Pattern pattern, String line) {
+        long timeUsed=0;
+
+        Set<String> names = Patterns.names(pattern);
+
+        for (int i=0;i<max;i++) {
+            long start=System.currentTimeMillis();
+            assertTrue(Patterns.match(pattern.matcher(line),names).isPresent());
+            timeUsed=timeUsed+(System.currentTimeMillis()-start);
+        }
+        return timeUsed;
+    }
 }

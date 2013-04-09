@@ -19,12 +19,12 @@
  */
 package de.flapdoodle.logparser;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 
 public class GenericStreamProcessor<T> {
 
@@ -60,6 +60,7 @@ public class GenericStreamProcessor<T> {
 		List<String> nonMatchingLines = Lists.newArrayList();
 
 		boolean readDone = false;
+        int lines=0;
 
 		do {
 			Optional<IMatch<T>> nextMatch = firstMatch(reader);
@@ -78,7 +79,9 @@ public class GenericStreamProcessor<T> {
 					readDone = true;
 				}
 			}
-		} while (!readDone);
+            lines++;
+            System.out.print("\r"+lines);
+        } while (!readDone);
 	}
 
 	private Optional<IMatch<T>> firstMatch(IRewindableReader reader) throws IOException {

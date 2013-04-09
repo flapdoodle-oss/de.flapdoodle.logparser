@@ -19,6 +19,15 @@
  */
 package de.flapdoodle.logparser.regex;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -29,15 +38,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class Patterns {
 	static final Logger _logger=Logger.getLogger(Pattern.class.getName());
@@ -68,18 +68,24 @@ public class Patterns {
 	}
 	
 	public static Optional<Map<String, String>> match(Matcher matcher) {
-		if (matcher.find()) {
-			Map<String, String> map = Maps.newHashMap();
-			for (String name : names(matcher.pattern())) {
+        Set<String> names = names(matcher.pattern());
+
+        return match(matcher, names);
+	}
+
+    public static Optional<Map<String, String>> match(Matcher matcher, Set<String> names) {
+        if (matcher.find()) {
+            Map<String, String> map = Maps.newHashMap();
+            for (String name : names) {
 				String value = matcher.group(name);
 				if (value!=null) map.put(name, value);
 			}
 			return Optional.of(map);
 		}
-		return Optional.absent();
-	}
+        return Optional.absent();
+    }
 
-	public static Pattern build(Collection<String> parts) {
+    public static Pattern build(Collection<String> parts) {
 		StringBuilder sb = new StringBuilder();
 		for (String part : parts) {
 			sb.append(part);

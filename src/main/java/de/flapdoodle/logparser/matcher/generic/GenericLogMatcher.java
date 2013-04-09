@@ -24,6 +24,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import de.flapdoodle.logparser.GenericStreamProcessor;
 import de.flapdoodle.logparser.IMatch;
 import de.flapdoodle.logparser.IMatcher;
@@ -39,6 +40,7 @@ import de.flapdoodle.logparser.streamlistener.OnceAndOnlyOnceStreamListener;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -50,9 +52,13 @@ import java.util.regex.Pattern;
 public class GenericLogMatcher implements IMatcher<LogEntry> {
 
     private final ImmutableList<Pattern> firstLinesPatterns;
+    private final Map<Pattern,Set<String>> names= Maps.newHashMap();
 
     public GenericLogMatcher(Pattern firstLine, Pattern... additionalLines) {
         this.firstLinesPatterns = ImmutableList.<Pattern>builder().add(firstLine).add(additionalLines).build();
+        for (Pattern p : firstLinesPatterns) {
+            names.put(p,Patterns.names(p));
+        }
     }
 
     @Override
@@ -61,7 +67,7 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
         for (Pattern p : firstLinesPatterns) {
             Optional<String> possibleLine = reader.nextLine();
             if (possibleLine.isPresent()) {
-                Optional<Map<String, String>> match = Patterns.match(p.matcher(possibleLine.get()));
+                Optional<Map<String, String>> match = Patterns.match(p.matcher(possibleLine.get()),names.get(p));
                 if (match.isPresent()) {
                     lines.add(new LineWithMatch(possibleLine.get(),match.get()));
                 } else {
@@ -128,7 +134,16 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
 
                 GenericStreamProcessor<StackTrace> contentProcessor = new GenericStreamProcessor<StackTrace>(
                         Lists.<IMatcher<StackTrace>> newArrayList(new StackTraceMatcher()), contentListener, stackTraceListener);
-                contentProcessor.process(new StringListReaderAdapter(lines));
+                try {
+                    contentProcessor.process(new StringListReaderAdapter(lines));
+                } catch (IllegalArgumentException iax) {
+                    System.out.println("-----------------------------------");
+                    for (String line : lines) {
+                        System.out.println(line);
+                    }
+                    System.out.println("-----------------------------------");
+                    throw iax;
+                }
 
                 stackTrace = stackTraceListener.value();
                 messages = contentListener.lines();
