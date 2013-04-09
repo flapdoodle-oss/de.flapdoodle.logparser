@@ -63,7 +63,7 @@ org.apache.wicket.WicketRuntimeException: Exception in rendering component: [Htm
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:603) [na:1.7.0_07]
 	at java.lang.Thread.run(Thread.java:722) [na:1.7.0_07]
 Caused by: java.lang.NullPointerException: null
-	at de.flapdoodle.stuff.commons.lang.BrowserWrapper.isOpera(BrowserWrapper.java:43) ~[common-1.137.15.0.jar:na]
+	at de.flapdoodle.stuff.commons.lang.BrowserWrapper.isPompey(BrowserWrapper.java:43) ~[common-1.137.15.0.jar:na]
 	at de.flapdoodle.stuff.comp.browser.widgets.component.editor.CKEditor.getUseNativeSpellChecker(CKEditor.java:157) ~[flapdoodle-stuff-common-1.137.15.0.jar:1.137.15.0]
 	at de.flapdoodle.stuff.comp.browser.widgets.component.editor.CKEditor.getConfig(CKEditor.java:141) ~[flapdoodle-stuff-common-1.137.15.0.jar:1.137.15.0]
 	at de.flapdoodle.stuff.comp.browser.widgets.component.editor.CKEditor.renderHead(CKEditor.java:110) ~[flapdoodle-stuff-common-1.137.15.0.jar:1.137.15.0]
