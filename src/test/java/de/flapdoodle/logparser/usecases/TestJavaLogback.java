@@ -80,7 +80,7 @@ public class TestJavaLogback {
 
         System.out.println(logEntry.stackTrace().get().toString());
 
-        More more = causeBy.more().get();
+        More more = causeBy.firstStackLines().more().get();
         assertEquals("moreLines", 64, more.count());
     }
 }

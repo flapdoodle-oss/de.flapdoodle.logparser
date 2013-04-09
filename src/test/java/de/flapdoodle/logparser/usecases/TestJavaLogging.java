@@ -19,37 +19,29 @@
  */
 package de.flapdoodle.logparser.usecases;
 
-import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.*;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import de.flapdoodle.logparser.GenericStreamProcessor;
+import de.flapdoodle.logparser.IMatcher;
+import de.flapdoodle.logparser.IRewindableReader;
+import de.flapdoodle.logparser.LogEntry;
+import de.flapdoodle.logparser.io.BufferedReaderAdapter;
+import de.flapdoodle.logparser.io.Streams;
+import de.flapdoodle.logparser.io.WriteToListLineProcessor;
+import de.flapdoodle.logparser.matcher.javalogging.StandardJavaLoggingMatcher;
+import de.flapdoodle.logparser.stacktrace.AbstractStackFrame;
+import de.flapdoodle.logparser.stacktrace.At;
+import de.flapdoodle.logparser.streamlistener.CollectingStreamListener;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import junit.framework.Assert;
-
-import org.junit.Test;
-
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
-import de.flapdoodle.logparser.GenericStreamProcessor;
-import de.flapdoodle.logparser.ILineProcessor;
-import de.flapdoodle.logparser.IMatcher;
-import de.flapdoodle.logparser.IReader;
-import de.flapdoodle.logparser.IRewindableReader;
-import de.flapdoodle.logparser.IStreamListener;
-import de.flapdoodle.logparser.LogEntry;
-import de.flapdoodle.logparser.io.BufferedReaderAdapter;
-import de.flapdoodle.logparser.io.Streams;
-import de.flapdoodle.logparser.io.WriteToConsoleLineProcessor;
-import de.flapdoodle.logparser.io.WriteToListLineProcessor;
-import de.flapdoodle.logparser.matcher.javalogging.StandardJavaLoggingMatcher;
-import de.flapdoodle.logparser.stacktrace.AbstractStackFrame;
-import de.flapdoodle.logparser.stacktrace.At;
-import de.flapdoodle.logparser.streamlistener.CollectingStreamListener;
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 
 public class TestJavaLogging {
@@ -70,7 +62,7 @@ public class TestJavaLogging {
 		
 		assertTrue("no lines to console",defaultLineProcessor.lines().isEmpty());
 		ImmutableList<LogEntry> entries = streamListener.entries();
-		
+
 		assertEquals("Log Lines",8,entries.size());
 		
 		AbstractStackFrame rootCause = entries.get(3).stackTrace().get().rootCause();

@@ -19,15 +19,15 @@
  */
 package de.flapdoodle.logparser.stacktrace;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 
 public class StackTrace extends AbstractStackFrame {
 
 	private ImmutableList<String> _source;
 
-	public StackTrace(List<String> source, ExceptionAndMessage exceptionAndMessage, List<At> stack, CauseBy cause) {
+	public StackTrace(List<String> source, ExceptionAndMessage exceptionAndMessage, List<StackLines> stack, CauseBy cause) {
 		super(exceptionAndMessage,stack,cause);
 		_source = ImmutableList.copyOf(source);
 	}
@@ -40,8 +40,8 @@ public class StackTrace extends AbstractStackFrame {
 		StringBuilder sb = new StringBuilder();
 		sb.append(_exceptionAndMessage);
 		sb.append("\n");
-		for (At at : _stack) {
-			sb.append(at);
+		for (StackLines stackLines : _stackLines) {
+			sb.append(stackLines);
 			sb.append("\n");
 		}
 		if (_cause != null) {

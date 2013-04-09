@@ -19,22 +19,25 @@
  */
 package de.flapdoodle.logparser.stacktrace;
 
-import java.util.List;
-
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 
 
 public abstract class AbstractStackFrame {
 
 	protected final ExceptionAndMessage _exceptionAndMessage;
-	protected final ImmutableList<At> _stack;
+	protected final ImmutableList<StackLines> _stackLines;
 	protected final CauseBy _cause;
 
-	protected AbstractStackFrame(ExceptionAndMessage exceptionAndMessage, List<At> stack, CauseBy cause) {
+	protected AbstractStackFrame(ExceptionAndMessage exceptionAndMessage, List<StackLines> stackLines, CauseBy cause) {
+        if (stackLines.isEmpty()) {
+            throw new RuntimeException("stacklines emtpy");
+        }
 		_exceptionAndMessage = exceptionAndMessage;
 		_cause = cause;
-		_stack = ImmutableList.copyOf(stack);
+		_stackLines = ImmutableList.copyOf(stackLines);
 	}
 
 	public ExceptionAndMessage exception() {
@@ -51,14 +54,16 @@ public abstract class AbstractStackFrame {
 		}
 		return this;
 	}
-	
-	public Optional<At> firstAt() {
-		return !_stack.isEmpty() ? Optional.of(_stack.get(0)) : Optional.<At>absent();
+
+	public ImmutableList<StackLines> stackLines() {
+		return _stackLines;
 	}
 
+    public Optional<At> firstAt() {
+        return firstStackLines().firstAt();
+    }
 
-	public ImmutableList<At> stack() {
-		return _stack;
-	}
-
+    public StackLines firstStackLines() {
+        return _stackLines.get(0);
+    }
 }

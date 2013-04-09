@@ -19,32 +19,27 @@
  */
 package de.flapdoodle.logparser.usecases;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import junit.framework.Assert;
-
-import org.junit.Test;
-
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-
 import de.flapdoodle.logparser.GenericStreamProcessor;
 import de.flapdoodle.logparser.IMatcher;
 import de.flapdoodle.logparser.IRewindableReader;
 import de.flapdoodle.logparser.io.BufferedReaderAdapter;
-import de.flapdoodle.logparser.io.Streams;
 import de.flapdoodle.logparser.io.WriteToConsoleLineProcessor;
 import de.flapdoodle.logparser.matcher.stacktrace.StackTraceMatcher;
 import de.flapdoodle.logparser.stacktrace.AbstractStackFrame;
 import de.flapdoodle.logparser.stacktrace.At;
 import de.flapdoodle.logparser.stacktrace.StackTrace;
 import de.flapdoodle.logparser.streamlistener.OnceAndOnlyOnceStreamListener;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 public class TestStackTraces {
 
