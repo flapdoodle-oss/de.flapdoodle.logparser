@@ -19,11 +19,11 @@
  */
 package de.flapdoodle.logparser.stacktrace;
 
-import java.util.List;
+import java.util.Collection;
 
 public class CauseBy extends AbstractStackFrame {
 
-	public CauseBy(ExceptionAndMessage exceptionAndMessage, List<StackLines> stack, CauseBy cause) {
+	public CauseBy(ExceptionAndMessage exceptionAndMessage, Collection<StackLines> stack, CauseBy cause) {
 		super(exceptionAndMessage, stack, cause);
 	}
 

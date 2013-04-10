@@ -69,7 +69,7 @@ public class TestJavaLogging {
 		AbstractStackFrame rootCause = entries.get(3).stackTrace().get().rootCause();
 		assertEquals("rootCause", "java.lang.NullPointerException", rootCause.exception().exceptionClass());
 
-		At rootCauseAt = rootCause.firstAt().get();
+		At rootCauseAt = rootCause.firstAt();
 		assertEquals("firstRootCause", "de.flapdoodle.logparser.usecases.TestJavaLogging", rootCauseAt.classname());
 		assertEquals("firstRootCause", "inner", rootCauseAt.method());
 

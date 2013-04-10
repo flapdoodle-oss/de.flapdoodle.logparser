@@ -19,16 +19,19 @@
  */
 package de.flapdoodle.logparser.stacktrace;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import java.util.Collection;
 import java.util.List;
 
 public class StackTrace extends AbstractStackFrame {
 
 	private ImmutableList<String> _source;
 
-	public StackTrace(List<String> source, ExceptionAndMessage exceptionAndMessage, List<StackLines> stack, CauseBy cause) {
+	public StackTrace(Collection<String> source, ExceptionAndMessage exceptionAndMessage, Collection<StackLines> stack, CauseBy cause) {
 		super(exceptionAndMessage, stack, cause);
+		Preconditions.checkArgument(source.size()>1, "no stacktrace with only one or less line");
 		_source = ImmutableList.copyOf(source);
 	}
 

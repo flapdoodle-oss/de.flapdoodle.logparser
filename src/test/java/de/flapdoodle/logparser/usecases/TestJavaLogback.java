@@ -72,7 +72,7 @@ public class TestJavaLogback {
 		AbstractStackFrame rootCause = logEntry.stackTrace().get().rootCause();
 		assertEquals("rootCause", "java.lang.NullPointerException", rootCause.exception().exceptionClass());
 
-		At rootCauseAt = rootCause.firstAt().get();
+		At rootCauseAt = rootCause.firstAt();
 		assertEquals("firstRootCause", "de.flapdoodle.stuff.commons.lang.BrowserWrapper", rootCauseAt.classname());
 		assertEquals("firstRootCause", "isPompey", rootCauseAt.method());
 

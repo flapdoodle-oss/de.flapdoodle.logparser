@@ -20,6 +20,7 @@
 package de.flapdoodle.logparser.stacktrace;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -36,14 +37,13 @@ public class StackLines {
 	private More _more;
 
 	public StackLines(List<At> stack, More more) {
+		Preconditions.checkArgument(!stack.isEmpty(),"at method list empty");
 		_stack = ImmutableList.copyOf(stack);
 		_more = more;
 	}
 
-	public Optional<At> firstAt() {
-		return !_stack.isEmpty()
-				? Optional.of(_stack.get(0))
-				: Optional.<At> absent();
+	public At firstAt() {
+		return _stack.get(0);
 	}
 
 	public Optional<More> more() {

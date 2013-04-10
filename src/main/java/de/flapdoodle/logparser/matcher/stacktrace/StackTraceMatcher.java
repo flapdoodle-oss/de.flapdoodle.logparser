@@ -21,6 +21,9 @@ package de.flapdoodle.logparser.matcher.stacktrace;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import de.flapdoodle.logparser.IBackBuffer;
@@ -31,6 +34,7 @@ import de.flapdoodle.logparser.stacktrace.ExceptionAndMessage;
 import de.flapdoodle.logparser.stacktrace.StackTrace;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -104,16 +108,20 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 	static class StackTraceMatch implements IMatch<StackTrace> {
 
 		private Stack _stack;
+		private StackLines _stackLines;
 
 		public StackTraceMatch(FirstLine firstLine, List<String> messages, At at) {
-			_stack = new Stack(firstLine, messages, at);
+			_stack = new Stack(firstLine, messages);
+			_stackLines = new StackLines();
+			_stackLines.add(at);
+			_stack.addStackLines(_stackLines);
 		}
 
 		@Override
 		public StackTrace process(List<String> lines) throws IOException {
 
 			IStackContainer stack = _stack;
-			IStackLines stackLines = stack.currentStackLines();
+			StackLines stackLines = _stackLines;
 
 			boolean lastOneWasCauseBy = false;
 
@@ -129,14 +137,16 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 						lastOneWasCauseBy = true;
 
 						stack = stack.causeBy(causeBy.get());
-						stackLines = stack.currentStackLines();
+						stackLines = new StackLines();
+						stack.addStackLines(stackLines);
 					} else {
 						Optional<More> more = More.match(line);
 						if (more.isPresent()) {
 							lastOneWasCauseBy = false;
 
 							stackLines.more(more.get());
-							stackLines = stack.newStackLines();
+							stackLines = new StackLines();
+							stack.addStackLines(stackLines);
 						} else {
 							if (!line.trim().isEmpty()) {
 								if (!lastOneWasCauseBy) {
@@ -173,8 +183,14 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 		return null;
 	}
 
-	private static List<de.flapdoodle.logparser.stacktrace.StackLines> stackLines(List<StackLines> atLines) {
-		return Lists.transform(atLines, new Function<StackLines, de.flapdoodle.logparser.stacktrace.StackLines>() {
+	private static Collection<de.flapdoodle.logparser.stacktrace.StackLines> stackLines(Collection<StackLines> atLines) {
+		Collection<StackLines> filtered = Collections2.filter(atLines, new Predicate<StackLines>() {
+			@Override
+			public boolean apply(StackLines stackLine) {
+				return !stackLine.atLines().isEmpty();
+			}
+		});
+		return Collections2.transform(filtered, new Function<StackLines, de.flapdoodle.logparser.stacktrace.StackLines>() {
 
 			@Override
 			public de.flapdoodle.logparser.stacktrace.StackLines apply(StackLines at) {
@@ -213,18 +229,19 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 
 	static interface IStackContainer {
 
-		IStackLines newStackLines();
+//		IStackLines newStackLines();
 
 		IStackContainer causeBy(CauseBy causeBy);
 
-		IStackLines currentStackLines();
+//		IStackLines currentStackLines();
+		void addStackLines(StackLines stackLines);
 
 		void addMessage(String line);
 	}
 
 	static abstract class AbstractStack implements IStackContainer {
 
-		private final List<StackLines> _stackLines = Lists.newArrayList(new StackLines());
+		private final List<StackLines> _stackLines = Lists.newArrayList();
 		private CauseByStack _causeBy;
 		private final List<String> _messages = Lists.newArrayList();
 
@@ -234,16 +251,20 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 			return _causeBy;
 		}
 
-		@Override
-		public IStackLines currentStackLines() {
-			return _stackLines.get(_stackLines.size() - 1);
+//		@Override
+//		public IStackLines currentStackLines() {
+//			return _stackLines.get(_stackLines.size() - 1);
+//		}
+
+//		public IStackLines newStackLines() {
+//			StackLines ret = new StackLines();
+//			_stackLines.add(ret);
+//			return ret;
+//		}
+		public void addStackLines(StackLines stackLines) {
+			_stackLines.add(stackLines);
 		}
 
-		public IStackLines newStackLines() {
-			StackLines ret = new StackLines();
-			_stackLines.add(ret);
-			return ret;
-		}
 
 		public ImmutableList<StackLines> stackLines() {
 			return ImmutableList.copyOf(_stackLines);
@@ -280,7 +301,7 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 			_atLines.add(at);
 		}
 
-		public List<At> atLines() {
+		public ImmutableList<At> atLines() {
 			return ImmutableList.copyOf(_atLines);
 		}
 
@@ -297,10 +318,9 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 
 		private final FirstLine _firstLine;
 
-		Stack(FirstLine firstLine, List<String> messages, At at) {
+		Stack(FirstLine firstLine, List<String> messages) {
 			_firstLine = firstLine;
 			addMessages(messages);
-			currentStackLines().add(at);
 		}
 
 	}

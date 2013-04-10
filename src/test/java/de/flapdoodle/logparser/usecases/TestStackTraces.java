@@ -59,8 +59,7 @@ public class TestStackTraces {
 
 		AbstractStackFrame rootCause = stackTrace.rootCause();
 		assertNotNull("rootCause", rootCause);
-		assertTrue(rootCause.firstAt().isPresent());
-		At at = rootCause.firstAt().get();
+		At at = rootCause.firstAt();
 		assertEquals("rootCause.at", "de.flapdoodle.logparser.usecases.TestJavaLogging", at.classname());
 		assertEquals("rootCause.at", "inner", at.method());
 	}
@@ -82,8 +81,7 @@ public class TestStackTraces {
 
 		AbstractStackFrame rootCause = stackTrace.rootCause();
 		assertNotNull("rootCause", rootCause);
-		assertTrue(rootCause.firstAt().isPresent());
-		At at = rootCause.firstAt().get();
+		At at = rootCause.firstAt();
 		assertEquals("rootCause.at", "de.flapdoodle.logparser.usecases.TestJavaLogging", at.classname());
 		assertEquals("rootCause.at", "inner", at.method());
 	}

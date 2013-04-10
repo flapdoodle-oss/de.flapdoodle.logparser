@@ -20,8 +20,10 @@
 package de.flapdoodle.logparser.stacktrace;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import java.util.Collection;
 import java.util.List;
 
 public abstract class AbstractStackFrame {
@@ -30,10 +32,8 @@ public abstract class AbstractStackFrame {
 	protected final ImmutableList<StackLines> _stackLines;
 	protected final CauseBy _cause;
 
-	protected AbstractStackFrame(ExceptionAndMessage exceptionAndMessage, List<StackLines> stackLines, CauseBy cause) {
-		if (stackLines.isEmpty()) {
-			throw new RuntimeException("stacklines emtpy");
-		}
+	protected AbstractStackFrame(ExceptionAndMessage exceptionAndMessage, Collection<StackLines> stackLines, CauseBy cause) {
+		Preconditions.checkArgument(!stackLines.isEmpty(), "stacklines emtpy");
 		_exceptionAndMessage = exceptionAndMessage;
 		_cause = cause;
 		_stackLines = ImmutableList.copyOf(stackLines);
@@ -58,7 +58,7 @@ public abstract class AbstractStackFrame {
 		return _stackLines;
 	}
 
-	public Optional<At> firstAt() {
+	public At firstAt() {
 		return firstStackLines().firstAt();
 	}
 
