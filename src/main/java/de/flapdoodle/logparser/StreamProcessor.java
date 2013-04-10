@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,29 +33,30 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 	private final ImmutableList<? extends IMatcher<T>> _matcher;
 	private final ILineProcessor _defaultLineProcessor;
 	private final IStreamListener<T> _listener;
-    private final IStreamErrorListener _errorListener;
+	private final IStreamErrorListener _errorListener;
 
-    private static final int OFFSET = 1000;
+	private static final int OFFSET = 1000;
 
-    public StreamProcessor(Collection<? extends IMatcher<T>> matcher, ILineProcessor defaultLineProcessor,
-			IStreamListener<T> listener,IStreamErrorListener errorListener) {
-        _errorListener = errorListener;
-        _matcher = ImmutableList.copyOf(matcher);
+	public StreamProcessor(Collection<? extends IMatcher<T>> matcher, ILineProcessor defaultLineProcessor,
+			IStreamListener<T> listener, IStreamErrorListener errorListener) {
+		_errorListener = errorListener;
+		_matcher = ImmutableList.copyOf(matcher);
 		_defaultLineProcessor = defaultLineProcessor;
 		_listener = listener;
 	}
-    public StreamProcessor(Collection<? extends IMatcher<T>> matcher, ILineProcessor defaultLineProcessor,
-                           IStreamListener<T> listener) {
-        this(matcher,defaultLineProcessor,listener,new DoesNotExpectAnyErrorListener());
-    }
 
-        @Override
+	public StreamProcessor(Collection<? extends IMatcher<T>> matcher, ILineProcessor defaultLineProcessor,
+			IStreamListener<T> listener) {
+		this(matcher, defaultLineProcessor, listener, new DoesNotExpectAnyErrorListener());
+	}
+
+	@Override
 	public void process(IRewindableReader reader) throws IOException {
 		boolean eof = false;
 
-        do {
-            Optional<IMatch<T>> match = firstMatch(reader,new EmtpyBackBuffer());
-            if (match.isPresent()) {
+		do {
+			Optional<IMatch<T>> match = firstMatch(reader, new EmtpyBackBuffer());
+			if (match.isPresent()) {
 				process(reader, match);
 			} else {
 				Optional<String> nextLine = reader.nextLine();
@@ -70,25 +71,25 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 
 	private void process(IRewindableReader reader, Optional<IMatch<T>> match) throws IOException {
 		List<String> nonMatchingLines = Lists.newArrayList();
-		IBackBuffer backBuffer=new BackBufferFromList(nonMatchingLines);
+		IBackBuffer backBuffer = new BackBufferFromList(nonMatchingLines);
 
 		boolean readDone = false;
 		int lines = 0;
 		int showNumberAt = lines + OFFSET;
 
 		do {
-			Optional<IMatch<T>> nextMatch = firstMatch(reader,backBuffer);
+			Optional<IMatch<T>> nextMatch = firstMatch(reader, backBuffer);
 			if (nextMatch.isPresent()) {
-                processMatch(match, nonMatchingLines);
-                match=nextMatch;
+				processMatch(match, nonMatchingLines);
+				match = nextMatch;
 				nonMatchingLines = Lists.newArrayList();
 			} else {
 				Optional<String> nextLine = reader.nextLine();
 				if (nextLine.isPresent()) {
 					nonMatchingLines.add(nextLine.get());
 				} else {
-                    processMatch(match, nonMatchingLines);
-                    match=nextMatch;
+					processMatch(match, nonMatchingLines);
+					match = nextMatch;
 					nonMatchingLines = Lists.newArrayList();
 					readDone = true;
 				}
@@ -101,19 +102,19 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 		} while (!readDone);
 	}
 
-    private void processMatch(Optional<IMatch<T>> match, List<String> nonMatchingLines) throws IOException {
-        try {
-            T result = match.get().process(nonMatchingLines);
-            _listener.entry(result);
-        } catch (StreamProcessException stp) {
-            _errorListener.error(stp);
-        }
-    }
+	private void processMatch(Optional<IMatch<T>> match, List<String> nonMatchingLines) throws IOException {
+		try {
+			T result = match.get().process(nonMatchingLines);
+			_listener.entry(result);
+		} catch (StreamProcessException stp) {
+			_errorListener.error(stp);
+		}
+	}
 
-    private Optional<IMatch<T>> firstMatch(IRewindableReader reader,IBackBuffer backBuffer) throws IOException {
+	private Optional<IMatch<T>> firstMatch(IRewindableReader reader, IBackBuffer backBuffer) throws IOException {
 		reader.setMarker();
 		for (IMatcher<T> matcher : _matcher) {
-			Optional<IMatch<T>> match = matcher.match(reader,backBuffer);
+			Optional<IMatch<T>> match = matcher.match(reader, backBuffer);
 			if (match.isPresent()) {
 				return match;
 			} else {
@@ -122,7 +123,7 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 		}
 		return Optional.absent();
 	}
-	
+
 	static class BackBufferFromList implements IBackBuffer {
 
 		private final List<String> _lines;
@@ -130,20 +131,20 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 		public BackBufferFromList(List<String> lines) {
 			_lines = lines;
 		}
-		
+
 		@Override
 		public ImmutableList<String> lastLines() {
 			return ImmutableList.copyOf(Lists.reverse(_lines));
 		}
-		
+
 	}
-	
+
 	static class EmtpyBackBuffer implements IBackBuffer {
 
 		@Override
 		public ImmutableList<String> lastLines() {
 			return ImmutableList.of();
 		}
-		
+
 	}
 }

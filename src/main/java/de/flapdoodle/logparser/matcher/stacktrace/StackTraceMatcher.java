@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 
 public class StackTraceMatcher implements IMatcher<StackTrace> {
 
-    static final Logger _logger=Logger.getLogger(StackTraceMatcher.class.getName());
+	static final Logger _logger = Logger.getLogger(StackTraceMatcher.class.getName());
 
 	static final int MAX_LOOK_AHEAD = 30;
 
@@ -54,34 +54,33 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 			if (More.find(firstLineAsString)) {
 				return Optional.absent();
 			}
-			if (causeByButNothingElseAtIn(backBuffer.lastLines())){
+			if (causeByButNothingElseAtIn(backBuffer.lastLines())) {
 				return Optional.absent();
 			}
-			
+
 			Optional<FirstLine> firstLine = FirstLine.match(firstLineAsString);
 			if (firstLine.isPresent()) {
-				
-				int leftToTry=MAX_LOOK_AHEAD;
-				List<String> messageLines=Lists.newArrayList();
-				
-				do
-				{
+
+				int leftToTry = MAX_LOOK_AHEAD;
+				List<String> messageLines = Lists.newArrayList();
+
+				do {
 					leftToTry--;
-					
+
 					Optional<String> possibleSecondLine = reader.nextLine();
 					if (possibleSecondLine.isPresent()) {
 						Optional<At> secondLine = At.match(possibleSecondLine.get());
 						if (secondLine.isPresent()) {
-							return Optional.<IMatch<StackTrace>> of(new StackTraceMatch(firstLine.get(), messageLines, secondLine.get()));
+							return Optional.<IMatch<StackTrace>> of(new StackTraceMatch(firstLine.get(), messageLines,
+									secondLine.get()));
 						} else {
 							messageLines.add(possibleSecondLine.get());
 						}
 					} else {
-						leftToTry=0;
+						leftToTry = 0;
 					}
-				}
-				while (leftToTry>0);
-				
+				} while (leftToTry > 0);
+
 			}
 		}
 		return Optional.absent();
@@ -92,13 +91,13 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 			if (CauseBy.find(line)) {
 				return true;
 			}
-            if (At.find(line)) {
-                return false;
-            }
-            if (More.find(line)) {
-                return false;
-            }
-        }
+			if (At.find(line)) {
+				return false;
+			}
+			if (More.find(line)) {
+				return false;
+			}
+		}
 		return false;
 	}
 
@@ -106,7 +105,7 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 
 		private Stack _stack;
 
-		public StackTraceMatch(FirstLine firstLine,List<String> messages, At at) {
+		public StackTraceMatch(FirstLine firstLine, List<String> messages, At at) {
 			_stack = new Stack(firstLine, messages, at);
 		}
 
@@ -116,35 +115,35 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 			IStackContainer stack = _stack;
 			IStackLines stackLines = stack.currentStackLines();
 
-			boolean lastOneWasCauseBy=false;
-			
+			boolean lastOneWasCauseBy = false;
+
 			for (String line : lines) {
 				Optional<At> at = At.match(line);
 				if (at.isPresent()) {
-					lastOneWasCauseBy=false;
-					
+					lastOneWasCauseBy = false;
+
 					stackLines.add(at.get());
 				} else {
 					Optional<CauseBy> causeBy = CauseBy.match(line);
 					if (causeBy.isPresent()) {
-						lastOneWasCauseBy=true;
-						
+						lastOneWasCauseBy = true;
+
 						stack = stack.causeBy(causeBy.get());
 						stackLines = stack.currentStackLines();
 					} else {
 						Optional<More> more = More.match(line);
 						if (more.isPresent()) {
-							lastOneWasCauseBy=false;
-							
+							lastOneWasCauseBy = false;
+
 							stackLines.more(more.get());
 							stackLines = stack.newStackLines();
 						} else {
-                            if (!line.trim().isEmpty()) {
-                                if (!lastOneWasCauseBy) {
-                                    _logger.fine("unknown type of line: '"+line+"'");
-                                }
-                                stack.addMessage(line);
-                            }
+							if (!line.trim().isEmpty()) {
+								if (!lastOneWasCauseBy) {
+									_logger.fine("unknown type of line: '" + line + "'");
+								}
+								stack.addMessage(line);
+							}
 						}
 					}
 				}
@@ -258,7 +257,7 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 		public void addMessage(String line) {
 			_messages.add(line);
 		}
-		
+
 		public void addMessages(List<String> messages) {
 			_messages.addAll(messages);
 		}

@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -66,7 +66,7 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
 	}
 
 	@Override
-	public Optional<IMatch<LogEntry>> match(IReader reader,IBackBuffer backBuffer) throws IOException {
+	public Optional<IMatch<LogEntry>> match(IReader reader, IBackBuffer backBuffer) throws IOException {
 		List<LineWithMatch> lines = Lists.newArrayList();
 		for (Pattern p : firstLinesPatterns) {
 			Optional<String> possibleLine = reader.nextLine();
@@ -112,7 +112,7 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
 		}
 
 		@Override
-		public LogEntry process(List<String> lines) throws IOException,StreamProcessException {
+		public LogEntry process(List<String> lines) throws IOException, StreamProcessException {
 			ImmutableList.Builder<String> builder = ImmutableList.<String> builder();
 			builder.addAll(Lists.transform(this.lines, new Function<LineWithMatch, String>() {
 
@@ -140,19 +140,22 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
 				OnceAndOnlyOnceStreamListener<StackTrace> stackTraceListener = new OnceAndOnlyOnceStreamListener<StackTrace>();
 				WriteToListLineProcessor contentListener = new WriteToListLineProcessor();
 
-                IStreamErrorListener errorListener=new IStreamErrorListener() {
-                    @Override
-                    public void error(StreamProcessException sx) {
-                        throw new RuntimeException("should not happen",sx);
-                    }
-                };
+				IStreamErrorListener errorListener = new IStreamErrorListener() {
 
-                StreamProcessor<StackTrace> contentProcessor = new StreamProcessor<StackTrace>(
-						Lists.<IMatcher<StackTrace>> newArrayList(new StackTraceMatcher()), contentListener, stackTraceListener,errorListener);
+					@Override
+					public void error(StreamProcessException sx) {
+						throw new RuntimeException("should not happen", sx);
+					}
+				};
+
+				StreamProcessor<StackTrace> contentProcessor = new StreamProcessor<StackTrace>(
+						Lists.<IMatcher<StackTrace>> newArrayList(new StackTraceMatcher()), contentListener, stackTraceListener,
+						errorListener);
 				try {
 					contentProcessor.process(new StringListReaderAdapter(lines));
 				} catch (RuntimeException iax) {
-					throw new StackTraceParseException(asString(lines),new LogEntry(allLines, LogEntry.join(attributes),null, messages), iax);
+					throw new StackTraceParseException(asString(lines), new LogEntry(allLines, LogEntry.join(attributes), null,
+							messages), iax);
 				}
 
 				stackTrace = stackTraceListener.value();
@@ -162,9 +165,9 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
 			return new LogEntry(allLines, LogEntry.join(attributes), stackTrace, messages);
 		}
 	}
-	
+
 	static String asString(List<String> lines) {
-		StringBuilder sb=new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 		sb.append("-----------------------------------\n");
 		for (String line : lines) {
 			sb.append(line);
@@ -177,8 +180,8 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
 	static class StackTraceParseException extends StreamProcessException {
 
 		public StackTraceParseException(String message, LogEntry entry, Throwable cause) {
-			super(message, entry,  cause);
+			super(message, entry, cause);
 		}
-		
+
 	}
 }

@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,12 +55,13 @@ public class TestJavaLogging {
 	@Test
 	public void readLogfile() throws IOException {
 
-        CollectingStreamListener<LogEntry> streamListener = new CollectingStreamListener<LogEntry>();
-        WriteToListLineProcessor defaultLineProcessor = new WriteToListLineProcessor();
+		CollectingStreamListener<LogEntry> streamListener = new CollectingStreamListener<LogEntry>();
+		WriteToListLineProcessor defaultLineProcessor = new WriteToListLineProcessor();
 
-        processLogFile("java-logging-stacktrace-sample.txt.gz", streamListener, defaultLineProcessor, new DoesNotExpectAnyErrorListener());
+		processLogFile("java-logging-stacktrace-sample.txt.gz", streamListener, defaultLineProcessor,
+				new DoesNotExpectAnyErrorListener());
 
-        assertTrue("no lines to console", defaultLineProcessor.lines().isEmpty());
+		assertTrue("no lines to console", defaultLineProcessor.lines().isEmpty());
 		ImmutableList<LogEntry> entries = streamListener.entries();
 
 		assertEquals("Log Lines", 8, entries.size());
@@ -72,64 +73,67 @@ public class TestJavaLogging {
 		assertEquals("firstRootCause", "de.flapdoodle.logparser.usecases.TestJavaLogging", rootCauseAt.classname());
 		assertEquals("firstRootCause", "inner", rootCauseAt.method());
 
-        assertEquals("date","Apr 04, 2013 8:01:44 PM",entries.get(0).attributes().get("date"));
-        assertEquals("date","Apr 04, 2013 8:02:45 PM",entries.get(1).attributes().get("date"));
-        assertEquals("date","Apr 04, 2013 8:03:45 PM",entries.get(2).attributes().get("date"));
-        assertEquals("date","Apr 04, 2013 8:04:45 PM",entries.get(3).attributes().get("date"));
+		assertEquals("date", "Apr 04, 2013 8:01:44 PM", entries.get(0).attributes().get("date"));
+		assertEquals("date", "Apr 04, 2013 8:02:45 PM", entries.get(1).attributes().get("date"));
+		assertEquals("date", "Apr 04, 2013 8:03:45 PM", entries.get(2).attributes().get("date"));
+		assertEquals("date", "Apr 04, 2013 8:04:45 PM", entries.get(3).attributes().get("date"));
 
-        assertEquals("date","Apr 04, 2013 11:01:21 PM",entries.get(4).attributes().get("date"));
-        assertEquals("date","Apr 04, 2013 11:02:21 PM",entries.get(5).attributes().get("date"));
-        assertEquals("date","Apr 04, 2013 11:03:21 PM",entries.get(6).attributes().get("date"));
-        assertEquals("date","Apr 04, 2013 11:04:21 PM",entries.get(7).attributes().get("date"));
-    }
+		assertEquals("date", "Apr 04, 2013 11:01:21 PM", entries.get(4).attributes().get("date"));
+		assertEquals("date", "Apr 04, 2013 11:02:21 PM", entries.get(5).attributes().get("date"));
+		assertEquals("date", "Apr 04, 2013 11:03:21 PM", entries.get(6).attributes().get("date"));
+		assertEquals("date", "Apr 04, 2013 11:04:21 PM", entries.get(7).attributes().get("date"));
+	}
 
-    @Test
-    public void logfileWithErrorInStackTrace() throws IOException {
+	@Test
+	public void logfileWithErrorInStackTrace() throws IOException {
 
-        CollectingStreamListener<LogEntry> streamListener = new CollectingStreamListener<LogEntry>();
-        WriteToListLineProcessor defaultLineProcessor = new WriteToListLineProcessor();
+		CollectingStreamListener<LogEntry> streamListener = new CollectingStreamListener<LogEntry>();
+		WriteToListLineProcessor defaultLineProcessor = new WriteToListLineProcessor();
 
-        final List<LogEntry> wrongEntries=Lists.newArrayList();
-        
-        IStreamErrorListener errorListener=new IStreamErrorListener() {
-            @Override
-            public void error(StreamProcessException sx) {
-                assertNotNull(sx);
-                assertNotNull("Entry",sx.entry(LogEntry.class).isPresent());
-                wrongEntries.add(sx.entry(LogEntry.class).get());
-            }
-        };
+		final List<LogEntry> wrongEntries = Lists.newArrayList();
 
-        processLogFile("stacktrace-with-error-in-stacktrace-multiline.txt", streamListener, defaultLineProcessor, errorListener);
+		IStreamErrorListener errorListener = new IStreamErrorListener() {
 
-        assertTrue("no lines to console", defaultLineProcessor.lines().isEmpty());
-        ImmutableList<LogEntry> entries = streamListener.entries();
+			@Override
+			public void error(StreamProcessException sx) {
+				assertNotNull(sx);
+				assertNotNull("Entry", sx.entry(LogEntry.class).isPresent());
+				wrongEntries.add(sx.entry(LogEntry.class).get());
+			}
+		};
 
-        assertEquals("Log Lines", 1, entries.size());
-        assertEquals("Log Lines", 1, wrongEntries.size());
-    }
+		processLogFile("stacktrace-with-error-in-stacktrace-multiline.txt", streamListener, defaultLineProcessor,
+				errorListener);
 
-    private void processLogFile(String logFile, IStreamListener<LogEntry> streamListener, ILineProcessor defaultLineProcessor, IStreamErrorListener errorListener) throws IOException {
-        try (InputStream stream = streamFromLogFile(logFile)) {
+		assertTrue("no lines to console", defaultLineProcessor.lines().isEmpty());
+		ImmutableList<LogEntry> entries = streamListener.entries();
+
+		assertEquals("Log Lines", 1, entries.size());
+		assertEquals("Log Lines", 1, wrongEntries.size());
+	}
+
+	private void processLogFile(String logFile, IStreamListener<LogEntry> streamListener,
+			ILineProcessor defaultLineProcessor, IStreamErrorListener errorListener) throws IOException {
+		try (InputStream stream = streamFromLogFile(logFile)) {
 			IRewindableReader reader = new BufferedReaderAdapter(stream, Charsets.UTF_8, 1024);
 
 			StreamProcessor<LogEntry> streamProcessor = new StreamProcessor<LogEntry>(
 					Lists.<IMatcher<LogEntry>> newArrayList(new StandardJavaLoggingMatcher()), defaultLineProcessor,
-					streamListener,errorListener);
+					streamListener, errorListener);
 
 			streamProcessor.process(reader);
 		}
-    }
+	}
 
-    private InputStream streamFromLogFile(String logFile) throws IOException {
-        InputStream uncompressedStream = getClass().getResourceAsStream(logFile);
-        if (logFile.endsWith(".gz")) {
-            return Streams.compressed(uncompressedStream);
-        }
-        return uncompressedStream;
-    }
+	private InputStream streamFromLogFile(String logFile) throws IOException {
+		InputStream uncompressedStream = getClass().getResourceAsStream(logFile);
+		if (logFile.endsWith(".gz")) {
+			return Streams.compressed(uncompressedStream);
+		}
+		return uncompressedStream;
+	}
 
-    //	@Test
+	//	@Test
 	public void createStacktraceWithThreeCauses() {
 
 		Logger logger = Logger.getLogger(getClass().getName());

@@ -1,16 +1,16 @@
 /**
  * Copyright (C) 2013
- *   Michael Mosmann <michael@mosmann.de>
- *
+ * Michael Mosmann <michael@mosmann.de>
+ * 
  * with contributions from
- * 	${lic.developers}
- *
+ * ${lic.developers}
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,63 +43,64 @@ import static junit.framework.Assert.assertTrue;
 
 public class TestStackTraces {
 
-    @Test
-    public void readStacktraceWithCauses() throws IOException {
+	@Test
+	public void readStacktraceWithCauses() throws IOException {
 
-        Optional<StackTrace> chanceOfStackTrace = stackTrace("stacktrace-with-causes.txt");
-        assertTrue(chanceOfStackTrace.isPresent());
-        StackTrace stackTrace = chanceOfStackTrace.get();
+		Optional<StackTrace> chanceOfStackTrace = stackTrace("stacktrace-with-causes.txt");
+		assertTrue(chanceOfStackTrace.isPresent());
+		StackTrace stackTrace = chanceOfStackTrace.get();
 
-        assertNotNull(stackTrace);
-        assertNotNull(stackTrace.cause().isPresent());
-        assertNotNull(stackTrace.cause().get().cause().isPresent());
+		assertNotNull(stackTrace);
+		assertNotNull(stackTrace.cause().isPresent());
+		assertNotNull(stackTrace.cause().get().cause().isPresent());
 
-        assertEquals("exceptionClass", "java.lang.RuntimeException", stackTrace.exception().exceptionClass());
-        assertEquals("exceptionMessage", "[middle]", stackTrace.exception().messages().toString());
+		assertEquals("exceptionClass", "java.lang.RuntimeException", stackTrace.exception().exceptionClass());
+		assertEquals("exceptionMessage", "[middle]", stackTrace.exception().messages().toString());
 
-        AbstractStackFrame rootCause = stackTrace.rootCause();
-        assertNotNull("rootCause", rootCause);
-        assertTrue(rootCause.firstAt().isPresent());
-        At at = rootCause.firstAt().get();
-        assertEquals("rootCause.at", "de.flapdoodle.logparser.usecases.TestJavaLogging", at.classname());
-        assertEquals("rootCause.at", "inner", at.method());
-    }
+		AbstractStackFrame rootCause = stackTrace.rootCause();
+		assertNotNull("rootCause", rootCause);
+		assertTrue(rootCause.firstAt().isPresent());
+		At at = rootCause.firstAt().get();
+		assertEquals("rootCause.at", "de.flapdoodle.logparser.usecases.TestJavaLogging", at.classname());
+		assertEquals("rootCause.at", "inner", at.method());
+	}
 
-    @Test
-    public void readStacktraceWithCausesMultilineMessages() throws IOException {
+	@Test
+	public void readStacktraceWithCausesMultilineMessages() throws IOException {
 
-        Optional<StackTrace> chanceOfStackTrace = stackTrace("stacktrace-with-causes-multiline.txt");
-        assertTrue(chanceOfStackTrace.isPresent());
-        StackTrace stackTrace = chanceOfStackTrace.get();
+		Optional<StackTrace> chanceOfStackTrace = stackTrace("stacktrace-with-causes-multiline.txt");
+		assertTrue(chanceOfStackTrace.isPresent());
+		StackTrace stackTrace = chanceOfStackTrace.get();
 
-        assertNotNull(stackTrace);
-        assertNotNull(stackTrace.cause().isPresent());
-        assertNotNull(stackTrace.cause().get().cause().isPresent());
+		assertNotNull(stackTrace);
+		assertNotNull(stackTrace.cause().isPresent());
+		assertNotNull(stackTrace.cause().get().cause().isPresent());
 
-        assertEquals("exceptionClass", "java.lang.RuntimeException", stackTrace.exception().exceptionClass());
-        assertEquals("exceptionMessage", "[middle, and other stuff, in many lines]", stackTrace.exception().messages().toString());
+		assertEquals("exceptionClass", "java.lang.RuntimeException", stackTrace.exception().exceptionClass());
+		assertEquals("exceptionMessage", "[middle, and other stuff, in many lines]",
+				stackTrace.exception().messages().toString());
 
-        AbstractStackFrame rootCause = stackTrace.rootCause();
-        assertNotNull("rootCause", rootCause);
-        assertTrue(rootCause.firstAt().isPresent());
-        At at = rootCause.firstAt().get();
-        assertEquals("rootCause.at", "de.flapdoodle.logparser.usecases.TestJavaLogging", at.classname());
-        assertEquals("rootCause.at", "inner", at.method());
-    }
+		AbstractStackFrame rootCause = stackTrace.rootCause();
+		assertNotNull("rootCause", rootCause);
+		assertTrue(rootCause.firstAt().isPresent());
+		At at = rootCause.firstAt().get();
+		assertEquals("rootCause.at", "de.flapdoodle.logparser.usecases.TestJavaLogging", at.classname());
+		assertEquals("rootCause.at", "inner", at.method());
+	}
 
-    private Optional<StackTrace> stackTrace(String logFileName) throws IOException {
-        OnceAndOnlyOnceStreamListener<StackTrace> stackListener = new OnceAndOnlyOnceStreamListener<StackTrace>();
+	private Optional<StackTrace> stackTrace(String logFileName) throws IOException {
+		OnceAndOnlyOnceStreamListener<StackTrace> stackListener = new OnceAndOnlyOnceStreamListener<StackTrace>();
 
-        try (InputStream stream = getClass().getResourceAsStream(logFileName)) {
-            IRewindableReader reader = new BufferedReaderAdapter(stream, Charsets.UTF_8, 1024);
-            StreamProcessor<StackTrace> streamProcessor = new StreamProcessor<StackTrace>(
-                    Lists.<IMatcher<StackTrace>>newArrayList(new StackTraceMatcher()), new WriteToConsoleLineProcessor(),
-                    stackListener);
+		try (InputStream stream = getClass().getResourceAsStream(logFileName)) {
+			IRewindableReader reader = new BufferedReaderAdapter(stream, Charsets.UTF_8, 1024);
+			StreamProcessor<StackTrace> streamProcessor = new StreamProcessor<StackTrace>(
+					Lists.<IMatcher<StackTrace>> newArrayList(new StackTraceMatcher()), new WriteToConsoleLineProcessor(),
+					stackListener);
 
-            streamProcessor.process(reader);
-        }
+			streamProcessor.process(reader);
+		}
 
-        return stackListener.value();
-    }
+		return stackListener.value();
+	}
 
 }
