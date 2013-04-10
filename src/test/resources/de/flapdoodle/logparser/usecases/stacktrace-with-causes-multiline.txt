@@ -36,11 +36,13 @@ but only if Caused by is before it
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.middle(TestJavaLogging.java:38)
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.outer(TestJavaLogging.java:28)
 	... 24 more
+
 Caused by: java.lang.IllegalArgumentException: java.lang.NullPointerException: without any cause but with a very looooooong message
 java.lang.NullPointerException: java.lang.RuntimeException: without any cause
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.middle(TestJavaLogging.java:38)
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.outer(TestJavaLogging.java:28)
 	... 24 more
+
 Caused by: java.lang.NullPointerException: without any cause
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.inner(TestJavaLogging.java:43)
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.middle(TestJavaLogging.java:36)

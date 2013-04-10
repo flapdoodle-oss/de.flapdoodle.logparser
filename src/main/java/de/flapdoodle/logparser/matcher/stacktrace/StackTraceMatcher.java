@@ -21,11 +21,8 @@ package de.flapdoodle.logparser.matcher.stacktrace;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.ImmutableBiMap.Builder;
-
 import de.flapdoodle.logparser.IBackBuffer;
 import de.flapdoodle.logparser.IMatch;
 import de.flapdoodle.logparser.IMatcher;
@@ -133,11 +130,13 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 							stackLines.more(more.get());
 							stackLines = stack.newStackLines();
 						} else {
-							if (lastOneWasCauseBy) {
-								stack.addMessage(line);
-							} else {
-								throw new RuntimeException("unknown type of line: "+line);
-							}
+                            if (!line.trim().isEmpty()) {
+                                if (lastOneWasCauseBy) {
+                                    stack.addMessage(line);
+                                } else {
+                                    throw new RuntimeException("unknown type of line: "+line);
+                                }
+                            }
 						}
 					}
 				}
