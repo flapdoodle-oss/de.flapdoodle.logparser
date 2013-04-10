@@ -24,6 +24,7 @@ in many lines
 	at de.flapdoodle.cglib.AnyClass$$FastClassByCGLIB$$d1310a7e.invoke(<generated>)
 	at org.apache.wicket.proxy.$Proxy111.getCapabilities(Unknown Source)
 	at de.flapdoodle.page.base.Page.<init>(Page.java:209)
+	at $Proxy54.getContactUriByMailDelayed(Unknown Source)
 	at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)
 	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
 	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:467)
