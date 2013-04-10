@@ -19,6 +19,12 @@
  */
 package de.flapdoodle.logparser.matcher.stacktrace;
 
+import com.google.common.base.Optional;
+import de.flapdoodle.logparser.regex.Patterns;
+
+import java.util.Map;
+import java.util.regex.Pattern;
+
 import static de.flapdoodle.logparser.matcher.CustomPatterns.Classname;
 import static de.flapdoodle.logparser.matcher.CustomPatterns.Method;
 import static de.flapdoodle.logparser.matcher.CustomPatterns.Space;
@@ -26,14 +32,6 @@ import static de.flapdoodle.logparser.regex.Patterns.group;
 import static de.flapdoodle.logparser.regex.Patterns.join;
 import static de.flapdoodle.logparser.regex.Patterns.namedGroup;
 import static java.util.regex.Pattern.compile;
-
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.google.common.base.Optional;
-
-import de.flapdoodle.logparser.regex.Patterns;
 
 public class At extends AbstractStackElement {
 
@@ -51,7 +49,7 @@ public class At extends AbstractStackElement {
 			compile("\\."),
 			namedGroup(METHOD, Method),
 			compile("\\("),
-			group(compile("Native Method"), compile("|"), namedGroup(FILE, "([a-zA-Z][a-zA-Z0-9]+)\\.java"), compile(":"),
+			group(compile("Native Method"), compile("|"), compile("Unknown Source"), compile("|"), namedGroup(FILE, "([a-zA-Z][a-zA-Z0-9]+)\\.java"), compile(":"),
 					namedGroup(LINE_NR, "\\d+")), compile("\\)"));
 
 	protected At(String line, Map<String, String> attributes) {

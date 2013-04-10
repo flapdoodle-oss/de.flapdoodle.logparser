@@ -20,6 +20,7 @@ in many lines
 	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:50)
 	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:222)
 	at org.junit.runners.ParentRunner.run(ParentRunner.java:300)
+	at sun.reflect.GeneratedMethodAccessor535.invoke(Unknown Source)
 	at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)
 	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
 	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:467)
