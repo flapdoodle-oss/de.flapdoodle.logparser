@@ -19,12 +19,8 @@
  */
 package de.flapdoodle.logparser.regex;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -33,7 +29,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class TestPatterns {
 
@@ -43,15 +45,15 @@ public class TestPatterns {
 		Matcher matcher = pattern.matcher("halli:hallo12");
 
 		Optional<Map<String, String>> match = Patterns.match(matcher);
-		Assert.assertTrue(match.isPresent());
-		Assert.assertEquals("start", "halli", match.get().get("start"));
-		Assert.assertEquals("end", "hallo12", match.get().get("end"));
-		Assert.assertEquals("number", "12", match.get().get("number"));
+		assertTrue(match.isPresent());
+		assertEquals("start", "halli", match.get().get("start"));
+		assertEquals("end", "hallo12", match.get().get("end"));
+		assertEquals("number", "12", match.get().get("number"));
 	}
 
 	@Test(expected = PatternSyntaxException.class)
 	public void groupNameCollision() {
-		Pattern pattern = Patterns.build("(?<bla>[a-z]+)", "\\s", "(?<bla>[a-z]+)");
+		Patterns.build("(?<bla>[a-z]+)", "\\s", "(?<bla>[a-z]+)");
 	}
 
 	@Test
@@ -59,11 +61,17 @@ public class TestPatterns {
 		Pattern pattern = Patterns.build("(?<a>[a-z]+)", "\\s", "(?<b>[a-z]+)");
 		Matcher matcher = pattern.matcher("abc def");
 		Optional<Map<String, String>> match = Patterns.match(matcher);
-		Assert.assertTrue(match.isPresent());
-		Assert.assertEquals("a", "abc", match.get().get("a"));
-		Assert.assertEquals("b", "def", match.get().get("b"));
+		assertTrue(match.isPresent());
+		assertEquals("a", "abc", match.get().get("a"));
+		assertEquals("b", "def", match.get().get("b"));
 	}
 
+	@Test
+	public void group() {
+		Pattern groupedWordPattern = Patterns.group("[\\w]+");
+		assertEquals("([\\w]+)",groupedWordPattern.pattern());
+	}
+	
 	@Test
 	public void namedGroup() {
 		Pattern wordPattern = Patterns.build("[\\w]+");
@@ -73,9 +81,9 @@ public class TestPatterns {
 		Matcher matcher = namePattern.matcher("Susi Sauerbraten");
 		Optional<Map<String, String>> match = Patterns.match(matcher);
 
-		Assert.assertTrue("Match", match.isPresent());
-		Assert.assertEquals("firstname", "Susi", match.get().get("firstname"));
-		Assert.assertEquals("secondname", "Sauerbraten", match.get().get("secondname"));
+		assertTrue("Match", match.isPresent());
+		assertEquals("firstname", "Susi", match.get().get("firstname"));
+		assertEquals("secondname", "Sauerbraten", match.get().get("secondname"));
 	}
 
 	@Test
@@ -90,11 +98,11 @@ public class TestPatterns {
 
 		Pattern joinedPattern = Patterns.join(start, firstname, space, secondname, end);
 
-		Assert.assertEquals("^(?<firstname>[a-zA-Z\\W]+)\\s+(?<secondname>[a-zA-Z\\W]+)$", joinedPattern.pattern());
+		assertEquals("^(?<firstname>[a-zA-Z\\W]+)\\s+(?<secondname>[a-zA-Z\\W]+)$", joinedPattern.pattern());
 
 		String line = "Hans Müller";
 
-		Assert.assertTrue(line, Patterns.find(joinedPattern, line));
+		assertTrue(line, Patterns.find(joinedPattern, line));
 	}
 
 	@Test
@@ -105,16 +113,17 @@ public class TestPatterns {
 		assertSameGroupNames("^(?<firstname>[a-zA-Z\\W]+)\\s+(?<secondname>[a-zA-Z\\W]+)$", extractorA, extractorB);
 		assertSameGroupNames("(?<start1>[a-z]+)(?<end>[0-9]+)", extractorA, extractorB);
 	}
-
+	
 	private void assertSameGroupNames(String regex, Patterns.IPatternNameSetExtractor extractorA,
 			Patterns.IPatternNameSetExtractor extractorB) {
 		Pattern pattern = Pattern.compile(regex);
 		Set<String> groupNamesNative = extractorA.names(pattern);
 		Set<String> groupNamesFallback = extractorB.names(pattern);
 
-		Assert.assertEquals("" + regex, ImmutableSet.of(),
+		assertEquals("" + regex, ImmutableSet.of(),
 				Sets.difference(groupNamesNative, groupNamesFallback).immutableCopy());
 	}
+	
 
 	@Test
 	public void performanceTests() {
