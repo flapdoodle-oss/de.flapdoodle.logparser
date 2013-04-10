@@ -1,3 +1,5 @@
+Apr 04, 2013 8:15:44 PM de.flapdoodle.logparser.usecases.TestJavaLogging firstLogEntry
+INFO: some info
 java.lang.RuntimeException: middle
 and other stuff
 in many lines
@@ -46,6 +48,7 @@ java.lang.NullPointerException: java.lang.RuntimeException: without any cause
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.middle(TestJavaLogging.java:38)
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.outer(TestJavaLogging.java:28)
 	... 24 more
+; RootCauseMessage: de.flapdoodle.server.ServiceUnavailableException: what the hell
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.middle(TestJavaLogging.java:38)
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.outer(TestJavaLogging.java:28)
 	... 24 more
@@ -55,3 +58,5 @@ Caused by: java.lang.NullPointerException: without any cause
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.middle(TestJavaLogging.java:36)
 	... 25 more
 org.apache.wicket.RestartResponseException: null
+Apr 04, 2013 9:15:44 PM de.flapdoodle.logparser.usecases.TestJavaLogging secondLogEntry
+INFO: some info

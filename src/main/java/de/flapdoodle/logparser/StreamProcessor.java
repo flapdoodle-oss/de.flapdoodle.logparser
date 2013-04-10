@@ -22,6 +22,7 @@ package de.flapdoodle.logparser;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import de.flapdoodle.logparser.streamlistener.DoesNotExpectAnyErrorListener;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -32,17 +33,23 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 	private final ImmutableList<? extends IMatcher<T>> _matcher;
 	private final ILineProcessor _defaultLineProcessor;
 	private final IStreamListener<T> _listener;
+    private final IStreamErrorListener _errorListener;
 
-	private static final int OFFSET = 1000;
+    private static final int OFFSET = 1000;
 
-	public StreamProcessor(Collection<? extends IMatcher<T>> matcher, ILineProcessor defaultLineProcessor,
-			IStreamListener<T> listener) {
-		_matcher = ImmutableList.copyOf(matcher);
+    public StreamProcessor(Collection<? extends IMatcher<T>> matcher, ILineProcessor defaultLineProcessor,
+			IStreamListener<T> listener,IStreamErrorListener errorListener) {
+        _errorListener = errorListener;
+        _matcher = ImmutableList.copyOf(matcher);
 		_defaultLineProcessor = defaultLineProcessor;
 		_listener = listener;
 	}
+    public StreamProcessor(Collection<? extends IMatcher<T>> matcher, ILineProcessor defaultLineProcessor,
+                           IStreamListener<T> listener) {
+        this(matcher,defaultLineProcessor,listener,new DoesNotExpectAnyErrorListener());
+    }
 
-	@Override
+        @Override
 	public void process(IRewindableReader reader) throws IOException {
 		boolean eof = false;
 
@@ -72,16 +79,14 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 		do {
 			Optional<IMatch<T>> nextMatch = firstMatch(reader,backBuffer);
 			if (nextMatch.isPresent()) {
-				T result = match.get().process(nonMatchingLines);
-				_listener.entry(result);
+                processMatch(match, nonMatchingLines);
 				nonMatchingLines = Lists.newArrayList();
 			} else {
 				Optional<String> nextLine = reader.nextLine();
 				if (nextLine.isPresent()) {
 					nonMatchingLines.add(nextLine.get());
 				} else {
-					T result = match.get().process(nonMatchingLines);
-					_listener.entry(result);
+                    processMatch(match, nonMatchingLines);
 					nonMatchingLines = Lists.newArrayList();
 					readDone = true;
 				}
@@ -94,7 +99,16 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 		} while (!readDone);
 	}
 
-	private Optional<IMatch<T>> firstMatch(IRewindableReader reader,IBackBuffer backBuffer) throws IOException {
+    private void processMatch(Optional<IMatch<T>> match, List<String> nonMatchingLines) throws IOException {
+        try {
+            T result = match.get().process(nonMatchingLines);
+            _listener.entry(result);
+        } catch (StreamProcessException stp) {
+            _errorListener.error(stp);
+        }
+    }
+
+    private Optional<IMatch<T>> firstMatch(IRewindableReader reader,IBackBuffer backBuffer) throws IOException {
 		reader.setMarker();
 		for (IMatcher<T> matcher : _matcher) {
 			Optional<IMatch<T>> match = matcher.match(reader,backBuffer);

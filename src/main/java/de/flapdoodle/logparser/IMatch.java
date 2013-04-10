@@ -24,5 +24,5 @@ import java.util.List;
 
 public interface IMatch<T> {
 
-	T process(List<String> lines) throws IOException;
+	T process(List<String> lines) throws IOException, StreamProcessException;
 }

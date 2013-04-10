@@ -27,6 +27,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import de.flapdoodle.logparser.IBackBuffer;
+import de.flapdoodle.logparser.IStreamErrorListener;
+import de.flapdoodle.logparser.StreamProcessException;
 import de.flapdoodle.logparser.StreamProcessor;
 import de.flapdoodle.logparser.IMatch;
 import de.flapdoodle.logparser.IMatcher;
@@ -110,7 +112,7 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
 		}
 
 		@Override
-		public LogEntry process(List<String> lines) throws IOException {
+		public LogEntry process(List<String> lines) throws IOException,StreamProcessException {
 			ImmutableList.Builder<String> builder = ImmutableList.<String> builder();
 			builder.addAll(Lists.transform(this.lines, new Function<LineWithMatch, String>() {
 
@@ -138,12 +140,19 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
 				OnceAndOnlyOnceStreamListener<StackTrace> stackTraceListener = new OnceAndOnlyOnceStreamListener<StackTrace>();
 				WriteToListLineProcessor contentListener = new WriteToListLineProcessor();
 
-				StreamProcessor<StackTrace> contentProcessor = new StreamProcessor<StackTrace>(
-						Lists.<IMatcher<StackTrace>> newArrayList(new StackTraceMatcher()), contentListener, stackTraceListener);
+                IStreamErrorListener errorListener=new IStreamErrorListener() {
+                    @Override
+                    public void error(StreamProcessException sx) {
+                        throw new RuntimeException("should not happen",sx);
+                    }
+                };
+
+                StreamProcessor<StackTrace> contentProcessor = new StreamProcessor<StackTrace>(
+						Lists.<IMatcher<StackTrace>> newArrayList(new StackTraceMatcher()), contentListener, stackTraceListener,errorListener);
 				try {
 					contentProcessor.process(new StringListReaderAdapter(lines));
 				} catch (RuntimeException iax) {
-					throw new StackTraceParseException(asString(lines), iax);
+					throw new StackTraceParseException(asString(lines),new LogEntry(allLines, LogEntry.join(attributes),null, messages), iax);
 				}
 
 				stackTrace = stackTraceListener.value();
@@ -165,10 +174,10 @@ public class GenericLogMatcher implements IMatcher<LogEntry> {
 		return sb.toString();
 	}
 
-	static class StackTraceParseException extends RuntimeException {
+	static class StackTraceParseException extends StreamProcessException {
 
-		public StackTraceParseException(String message, Throwable cause) {
-			super(message, cause);
+		public StackTraceParseException(String message, LogEntry entry, Throwable cause) {
+			super(message, entry,  cause);
 		}
 		
 	}
