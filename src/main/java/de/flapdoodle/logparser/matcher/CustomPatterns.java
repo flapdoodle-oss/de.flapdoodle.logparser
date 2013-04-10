@@ -19,12 +19,10 @@
  */
 package de.flapdoodle.logparser.matcher;
 
-import static de.flapdoodle.logparser.regex.Patterns.build;
-import static de.flapdoodle.logparser.regex.Patterns.join;
-import static java.util.regex.Pattern.compile;
-
 import java.util.logging.Level;
 import java.util.regex.Pattern;
+
+import static java.util.regex.Pattern.compile;
 
 public class CustomPatterns {
 
@@ -36,7 +34,7 @@ public class CustomPatterns {
 	public static final Pattern Space = compile("\\s+");
 
 	public static final Pattern Method = compile("([a-zA-Z][a-zA-Z0-9\\$]*)");
-	public static final Pattern Classname = compile("([a-zA-Z]+)((\\.|\\$)[a-zA-Z][a-zA-Z\\$0-9]*)*");
+	public static final Pattern Classname = compile("([a-zA-Z]+)((\\.|\\$)[a-zA-Z\\$][a-zA-Z\\$0-9]*)*");
 
 	public static final Pattern Date = compile("([a-zA-Z]+) ([0-2]\\d|3[01]), (19|20|21)(\\d\\d) (1\\d|2\\d|\\d):([0-5][0-9]):([0-5][0-9]) (AM|PM)");
 	public static final Pattern Levels = compile(allLevels());
