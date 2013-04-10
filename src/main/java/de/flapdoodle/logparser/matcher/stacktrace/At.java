@@ -49,7 +49,7 @@ public class At extends AbstractStackElement {
 			compile("\\."),
 			namedGroup(METHOD, Method),
 			compile("\\("),
-			group(compile("Native Method"), compile("|"), compile("Unknown Source"), compile("|"), namedGroup(FILE, "([a-zA-Z][a-zA-Z0-9]+)\\.java"), compile(":"),
+			group(compile("Native Method"), compile("|"), compile("Unknown Source"), compile("|"),compile("<generated>"), compile("|"), namedGroup(FILE, "([a-zA-Z][a-zA-Z0-9]+)\\.java"), compile(":"),
 					namedGroup(LINE_NR, "\\d+")), compile("\\)"));
 
 	protected At(String line, Map<String, String> attributes) {
