@@ -24,6 +24,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import de.flapdoodle.logparser.collections.Collections;
 import de.flapdoodle.logparser.stacktrace.StackTrace;
 
 import java.util.Collection;
@@ -62,28 +64,10 @@ public class LogEntry {
 	}
 
 	public static Map<String, String> join(Collection<? extends Map<String, String>> maps) {
-		Map<String, String> ret = Maps.newHashMap();
-		for (Map<String, String> map : maps) {
-			ret = join(ret, map);
-		}
-		return ret;
+		return Collections.join(maps);
 	}
 
 	public static Map<String, String> join(Map<String, String>... maps) {
-		Map<String, String> ret = Maps.newHashMap();
-		for (Map<String, String> map : maps) {
-			ret = join(ret, map);
-		}
-		return ret;
+		return Collections.join(maps);
 	}
-
-	private static <K, V> Map<K, V> join(Map<K, V> a, Map<K, V> b) {
-		Map<K, V> ret = Maps.newHashMap(a);
-		ret.putAll(b);
-		if (ret.size() != a.size() + b.size()) {
-			throw new RuntimeException("Map contains same keys: " + Sets.intersection(a.keySet(), b.keySet()));
-		}
-		return ret;
-	}
-
 }
