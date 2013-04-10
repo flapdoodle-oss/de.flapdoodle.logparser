@@ -32,8 +32,11 @@ import de.flapdoodle.logparser.stacktrace.StackTrace;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class StackTraceMatcher implements IMatcher<StackTrace> {
+
+    static final Logger _logger=Logger.getLogger(StackTraceMatcher.class.getName());
 
 	static final int MAX_LOOK_AHEAD = 30;
 
@@ -51,7 +54,7 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 			if (More.find(firstLineAsString)) {
 				return Optional.absent();
 			}
-			if (causeByIn(backBuffer.lastLines())){
+			if (causeByButNothingElseAtIn(backBuffer.lastLines())){
 				return Optional.absent();
 			}
 			
@@ -84,12 +87,18 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 		return Optional.absent();
 	}
 
-	private boolean causeByIn(ImmutableList<String> lastLines) {
+	private boolean causeByButNothingElseAtIn(ImmutableList<String> lastLines) {
 		for (String line : lastLines) {
 			if (CauseBy.find(line)) {
 				return true;
 			}
-		}
+            if (At.find(line)) {
+                return false;
+            }
+            if (More.find(line)) {
+                return false;
+            }
+        }
 		return false;
 	}
 
@@ -134,7 +143,7 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
                                 if (lastOneWasCauseBy) {
                                     stack.addMessage(line);
                                 } else {
-                                    throw new RuntimeException("unknown type of line: "+line);
+                                    _logger.warning("unknown type of line: '"+line+"'");
                                 }
                             }
 						}
