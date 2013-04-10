@@ -71,7 +71,17 @@ public class TestJavaLogging {
 		At rootCauseAt = rootCause.firstAt().get();
 		assertEquals("firstRootCause", "de.flapdoodle.logparser.usecases.TestJavaLogging", rootCauseAt.classname());
 		assertEquals("firstRootCause", "inner", rootCauseAt.method());
-	}
+
+        assertEquals("date","Apr 04, 2013 8:01:44 PM",entries.get(0).attributes().get("date"));
+        assertEquals("date","Apr 04, 2013 8:02:45 PM",entries.get(1).attributes().get("date"));
+        assertEquals("date","Apr 04, 2013 8:03:45 PM",entries.get(2).attributes().get("date"));
+        assertEquals("date","Apr 04, 2013 8:04:45 PM",entries.get(3).attributes().get("date"));
+
+        assertEquals("date","Apr 04, 2013 11:01:21 PM",entries.get(4).attributes().get("date"));
+        assertEquals("date","Apr 04, 2013 11:02:21 PM",entries.get(5).attributes().get("date"));
+        assertEquals("date","Apr 04, 2013 11:03:21 PM",entries.get(6).attributes().get("date"));
+        assertEquals("date","Apr 04, 2013 11:04:21 PM",entries.get(7).attributes().get("date"));
+    }
 
     @Test
     public void logfileWithErrorInStackTrace() throws IOException {

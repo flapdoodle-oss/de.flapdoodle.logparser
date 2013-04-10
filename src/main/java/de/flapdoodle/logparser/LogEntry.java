@@ -83,7 +83,7 @@ public class LogEntry {
 		if (ret.size() != a.size() + b.size()) {
 			throw new RuntimeException("Map contains same keys: " + Sets.intersection(a.keySet(), b.keySet()));
 		}
-		return b;
+		return ret;
 	}
 
 }

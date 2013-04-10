@@ -53,9 +53,9 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 	public void process(IRewindableReader reader) throws IOException {
 		boolean eof = false;
 
-		do {
-			Optional<IMatch<T>> match = firstMatch(reader,new EmtpyBackBuffer());
-			if (match.isPresent()) {
+        do {
+            Optional<IMatch<T>> match = firstMatch(reader,new EmtpyBackBuffer());
+            if (match.isPresent()) {
 				process(reader, match);
 			} else {
 				Optional<String> nextLine = reader.nextLine();
@@ -80,6 +80,7 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 			Optional<IMatch<T>> nextMatch = firstMatch(reader,backBuffer);
 			if (nextMatch.isPresent()) {
                 processMatch(match, nonMatchingLines);
+                match=nextMatch;
 				nonMatchingLines = Lists.newArrayList();
 			} else {
 				Optional<String> nextLine = reader.nextLine();
@@ -87,6 +88,7 @@ public class StreamProcessor<T> implements IStreamProcessor<T> {
 					nonMatchingLines.add(nextLine.get());
 				} else {
                     processMatch(match, nonMatchingLines);
+                    match=nextMatch;
 					nonMatchingLines = Lists.newArrayList();
 					readDone = true;
 				}

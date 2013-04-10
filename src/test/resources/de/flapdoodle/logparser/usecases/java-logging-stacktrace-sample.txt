@@ -1,11 +1,11 @@
-Apr 04, 2013 8:15:44 PM de.flapdoodle.logparser.usecases.TestJavaLogging stacktraceWithTwoCauses
+Apr 04, 2013 8:01:44 PM de.flapdoodle.logparser.usecases.TestJavaLogging stacktraceWithTwoCauses
 INFO: some info
-Apr 04, 2013 8:15:45 PM de.flapdoodle.logparser.usecases.TestJavaLogging stacktraceWithTwoCauses
+Apr 04, 2013 8:02:45 PM de.flapdoodle.logparser.usecases.TestJavaLogging stacktraceWithTwoCauses
 WARNING: some error
 with a second line
-Apr 04, 2013 8:15:45 PM de.flapdoodle.logparser.usecases.TestJavaLogging stacktraceWithTwoCauses
+Apr 04, 2013 8:03:45 PM de.flapdoodle.logparser.usecases.TestJavaLogging stacktraceWithTwoCauses
 SEVERE: some error
-Apr 04, 2013 8:15:45 PM de.flapdoodle.logparser.usecases.TestJavaLogging stacktraceWithTwoCauses
+Apr 04, 2013 8:04:45 PM de.flapdoodle.logparser.usecases.TestJavaLogging stacktraceWithTwoCauses
 WARNING: outer
 java.lang.RuntimeException: middle
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.outer(TestJavaLogging.java:30)
@@ -41,14 +41,14 @@ Caused by: java.lang.NullPointerException: without any cause
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.inner(TestJavaLogging.java:43)
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.middle(TestJavaLogging.java:36)
 	... 25 more
-Apr 04, 2013 11:12:21 PM de.flapdoodle.logparser.usecases.TestJavaLogging createStacktraceWithOneCauses
+Apr 04, 2013 11:01:21 PM de.flapdoodle.logparser.usecases.TestJavaLogging createStacktraceWithOneCauses
 INFO: some info
-Apr 04, 2013 11:12:21 PM de.flapdoodle.logparser.usecases.TestJavaLogging createStacktraceWithOneCauses
+Apr 04, 2013 11:02:21 PM de.flapdoodle.logparser.usecases.TestJavaLogging createStacktraceWithOneCauses
 WARNING: some error
 with a second line
-Apr 04, 2013 11:12:21 PM de.flapdoodle.logparser.usecases.TestJavaLogging createStacktraceWithOneCauses
+Apr 04, 2013 11:03:21 PM de.flapdoodle.logparser.usecases.TestJavaLogging createStacktraceWithOneCauses
 SEVERE: some error
-Apr 04, 2013 11:12:21 PM de.flapdoodle.logparser.usecases.TestJavaLogging createStacktraceWithOneCauses
+Apr 04, 2013 11:04:21 PM de.flapdoodle.logparser.usecases.TestJavaLogging createStacktraceWithOneCauses
 WARNING: inner
 java.lang.NullPointerException: without any cause
 	at de.flapdoodle.logparser.usecases.TestJavaLogging.inner(TestJavaLogging.java:82)
