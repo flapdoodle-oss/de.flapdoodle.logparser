@@ -140,11 +140,10 @@ public class StackTraceMatcher implements IMatcher<StackTrace> {
 							stackLines = stack.newStackLines();
 						} else {
                             if (!line.trim().isEmpty()) {
-                                if (lastOneWasCauseBy) {
-                                    stack.addMessage(line);
-                                } else {
-                                    _logger.warning("unknown type of line: '"+line+"'");
+                                if (!lastOneWasCauseBy) {
+                                    _logger.fine("unknown type of line: '"+line+"'");
                                 }
+                                stack.addMessage(line);
                             }
 						}
 					}
