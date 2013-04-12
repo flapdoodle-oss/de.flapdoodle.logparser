@@ -179,6 +179,26 @@
 				</executions>
 			</plugin>
 			
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>test</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<classpathScope>test</classpathScope>
+							<mainClass>de.flapdoodle.logparser.buildsupport.ExtractMarkdownFromCode</mainClass>
+							<arguments>
+								<argument>${basedir}/src/test/java/de/flapdoodle/logparser/usecases/TestExampleReadMeCode.java</argument>
+								<argument>${project.build.directory}/usage-reademe.md</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
