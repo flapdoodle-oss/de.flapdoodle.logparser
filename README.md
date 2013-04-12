@@ -46,6 +46,25 @@ Snapshots (Repository http://oss.sonatype.org/content/repositories/snapshots)
 
 ### Usage
 
- NOT DOCUMENTED
+With this library it should be easy to setup a parser for most common and custom log files
+The following examples will show how you can do this.
 
+#### Simple LogFile
 
+		...
+		String regex = "(?<date>\\d+-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d) (?<level>[A-Z]+): (?<message>.*)$";
+		Pattern firstLinePattern = Pattern.compile(regex);
+		GenericLogMatcher genericLogMatcher = new GenericLogMatcher(firstLinePattern);
+
+		List<IMatcher<LogEntry>> matchers = Lists.<IMatcher<LogEntry>> newArrayList(genericLogMatcher);
+
+		IStreamListener<LogEntry> streamListener = collectingStreamListener;
+		ILineProcessor lineProcessor = writeToListLineProcessor;
+
+		StreamProcessor<LogEntry> streamProcessor = new StreamProcessor<LogEntry>(matchers, lineProcessor, streamListener);
+		...
+		...
+		int readAheadLimit = 1024;
+		IRewindableReader reader = new BufferedReaderAdapter(inputStream, Charsets.UTF_8, readAheadLimit);
+		streamProcessor.process(reader);
+		...
