@@ -79,6 +79,8 @@ public class TestStreamProcessor {
 		assertEquals("size",4,_listener.entries().size());
 		assertEquals("message 3",_listener.entries().get(2).message());
 		
+		assertEquals("message 2 has 0 comments",0,_listener.entries().get(1).comments().size());
+		
 		assertEquals("message 3 has 3 comments",3,_listener.entries().get(2).comments().size());
 		assertEquals("> comment 3",_listener.entries().get(2).comments().get(1));
 		
