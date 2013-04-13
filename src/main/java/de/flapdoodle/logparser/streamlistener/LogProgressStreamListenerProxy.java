@@ -24,26 +24,40 @@ import de.flapdoodle.logparser.IStreamListener;
 
 public class LogProgressStreamListenerProxy<T> implements IStreamListener<T> {
 
-	static final int MIN_NUMBER_OF_ENTRIES_PROCESSED_BEFORE_OUTPUT=1000;
-	
-	long _processedEntries=0;
-	long _nextOutput=_processedEntries+MIN_NUMBER_OF_ENTRIES_PROCESSED_BEFORE_OUTPUT;
-	
-	
 	private final IStreamListener<T> _proxiedStreamListener;
+	private final int _nrOfEntriesBeforeOutput;
 
-	public LogProgressStreamListenerProxy(IStreamListener<T> proxiedStreamListener) {
-		_proxiedStreamListener = proxiedStreamListener;
-	}
+	long _processedEntries=0;
+	long _nextOutput;
 	
+	public LogProgressStreamListenerProxy(IStreamListener<T> proxiedStreamListener,int nrOfEntriesBeforeOutput) {
+		_proxiedStreamListener = proxiedStreamListener;
+		_nrOfEntriesBeforeOutput = nrOfEntriesBeforeOutput;
+		setNextMark();
+	}
+
 	@Override
 	public void entry(T value) {
 		_proxiedStreamListener.entry(value);
+		
 		_processedEntries++;
-		if (_nextOutput<=_processedEntries) {
-			System.out.print("processed "+_processedEntries+"\r");
-			_nextOutput=_processedEntries+MIN_NUMBER_OF_ENTRIES_PROCESSED_BEFORE_OUTPUT;
+		
+		if (markReached()) {
+			showProgress(_processedEntries);
+			setNextMark();
 		}
+	}
+
+	private boolean markReached() {
+		return _nextOutput<=_processedEntries;
+	}
+
+	private void setNextMark() {
+		_nextOutput=_processedEntries+_nrOfEntriesBeforeOutput;
+	}
+	
+	protected void showProgress(long entries) {
+		System.out.print("processed "+entries+"\r");
 	}
 
 }

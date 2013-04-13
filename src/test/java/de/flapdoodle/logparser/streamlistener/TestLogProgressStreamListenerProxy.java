@@ -19,7 +19,13 @@
  */
 package de.flapdoodle.logparser.streamlistener;
 
+import static org.junit.Assert.*;
+
+import java.lang.ref.Reference;
+
 import org.junit.Test;
+
+import de.flapdoodle.logparser.IStreamListener;
 
 
 public class TestLogProgressStreamListenerProxy {
@@ -27,5 +33,52 @@ public class TestLogProgressStreamListenerProxy {
 	@Test
 	public void loopUntilOutput() {
 		
+		int loopsBeforeOutput=10;
+		
+		CountCallsStreamListener<String> countingListener=new CountCallsStreamListener<>();
+		
+		LogProgressStreamListenerProxyTestInstance streamListener=new LogProgressStreamListenerProxyTestInstance(countingListener, loopsBeforeOutput);
+
+		for (int i=0;i<4*loopsBeforeOutput;i++) {
+			streamListener.entry("dummy");
+		}
+		
+		assertEquals("proxy called",40,countingListener.called());
+		assertEquals("proxy called",4,streamListener.showProgressCalled());
+		
+	}
+	
+	private final class LogProgressStreamListenerProxyTestInstance extends LogProgressStreamListenerProxy {
+
+		int _showProgressCalled;
+		
+		private LogProgressStreamListenerProxyTestInstance(IStreamListener proxiedStreamListener, int nrOfEntriesBeforeOutput) {
+			super(proxiedStreamListener, nrOfEntriesBeforeOutput);
+		}
+
+		@Override
+		protected void showProgress(long entries) {
+			_showProgressCalled++;
+			super.showProgress(entries);
+		}
+		
+		
+		public int showProgressCalled() {
+			return _showProgressCalled;
+		}
+	}
+
+	static class CountCallsStreamListener<T> implements IStreamListener<T> {
+		private long _called;
+
+		@Override
+		public void entry(T value) {			
+			_called++;
+		}
+
+		
+		public long called() {
+			return _called;
+		}
 	}
 }
