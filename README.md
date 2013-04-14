@@ -12,6 +12,8 @@ read any java log format and process it
 
 ## Howto
 
+**This will need Java 7 runtime, because of the used file io enhancement and java regex named group support.**
+
 ### Maven
 
 Stable (Maven Central Repository, Released: 09.04.2013 - wait 24hrs for [maven central](http://repo1.maven.org/maven2/de/flapdoodle/de.flapdoodle.logparser/maven-metadata.xml))
@@ -34,6 +36,8 @@ Snapshots (Repository http://oss.sonatype.org/content/repositories/snapshots)
 
 #### 1.2 (SNAPSHOT)
 
+- documentation enhancement
+
 #### 1.1
 
 - major refactoring
@@ -51,20 +55,33 @@ The following examples will show how you can do this.
 
 #### Simple LogFile
 
-		...
-		String regex = "(?<date>\\d+-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d) (?<level>[A-Z]+): (?<message>.*)$";
-		Pattern firstLinePattern = Pattern.compile(regex);
-		GenericLogMatcher genericLogMatcher = new GenericLogMatcher(firstLinePattern);
+This is how you can parse a simple logfile (with stacktrace support). In this example the logfile can look
+like this:
 
-		List<IMatcher<LogEntry>> matchers = Lists.<IMatcher<LogEntry>> newArrayList(genericLogMatcher);
+	2013-04-07 00:00:01 INFO: Everything is fine
+	2013-04-07 00:00:01 ERROR: Something went wrong
+	de.flapdoodle.BadCaseException: wo should stop right now
+		at de.flapdoodle.HarmlessComponent.simpleMethod(HarmlessComponent.java:123)
+		at de.flapdoodle.Main.main(Main.java:12)
+	Caused by: java.lang.NullPointerException: null
+		at de.flapdoodle.stuff.ReachTheStarAdapter.reach(ReachTheStarAdapter.java:123456)
+		at de.flapdoodle.stuff.ReachSomething.reach(ReachSomething.java:123456)
+		... 64 common frames omitted
 
-		IStreamListener<LogEntry> streamListener = collectingStreamListener;
-		ILineProcessor lineProcessor = writeToListLineProcessor;
+	...
+	String regex = "(?<date>\\d+-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d) (?<level>[A-Z]+): (?<message>.*)$";
+	Pattern firstLinePattern = Pattern.compile(regex);
+	GenericLogMatcher genericLogMatcher = new GenericLogMatcher(firstLinePattern);
 
-		StreamProcessor<LogEntry> streamProcessor = new StreamProcessor<LogEntry>(matchers, lineProcessor, streamListener);
-		...
-		...
-		int readAheadLimit = 1024;
-		IRewindableReader reader = new BufferedReaderAdapter(inputStream, Charsets.UTF_8, readAheadLimit);
-		streamProcessor.process(reader);
-		...
+	List<IMatcher<LogEntry>> matchers = Lists.<IMatcher<LogEntry>> newArrayList(genericLogMatcher);
+
+	IStreamListener<LogEntry> streamListener = collectingStreamListener;
+	ILineProcessor lineProcessor = writeToListLineProcessor;
+
+	StreamProcessor<LogEntry> streamProcessor = new StreamProcessor<LogEntry>(matchers, lineProcessor, streamListener);
+	...
+	...
+	int readAheadLimit = 1024;
+	IRewindableReader reader = new BufferedReaderAdapter(inputStream, Charsets.UTF_8, readAheadLimit);
+	streamProcessor.process(reader);
+	...

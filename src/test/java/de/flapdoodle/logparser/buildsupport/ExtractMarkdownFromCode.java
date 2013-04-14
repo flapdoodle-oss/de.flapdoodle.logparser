@@ -18,27 +18,6 @@
  * limitations under the License.
  */
 package de.flapdoodle.logparser.buildsupport;
-/**
- * Copyright (C) 2011
- *   Michael Mosmann <michael@mosmann.de>
- *   Martin Jöhren <m.joehren@googlemail.com>
- *
- * with contributions from
- * 	konstantin-ba@github,Archimedes Trajano	(trajano@github)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 
 import java.io.File;
 import java.io.IOException;
@@ -68,8 +47,8 @@ public class ExtractMarkdownFromCode {
 
 	private static String extractMarkdown(String sourceFileName) throws IOException {
 		List<String> lines = Files.readLines(new File(sourceFileName), Charsets.UTF_8);
-		Collection<String> result = compactEmptyLines(surroundHeadlineWithEmptyLines(uncommentThreeDots(shiftOneTabLeft(stripNonCodeLines(freeHeader(startWithFirstHeader(resolveIncludes(
-				sourceFileName, lines))))))));
+		Collection<String> result = compactEmptyLines(surroundHeadlineWithEmptyLines(uncommentThreeDots(shiftOneTabLeft(stripNonCodeLines(freeHeader(startWithFirstHeader(resolveResources(sourceFileName,resolveIncludes(
+				sourceFileName, lines)))))))));
 		StringBuilder sb = new StringBuilder();
 		for (String line : result) {
 			sb.append(line);
@@ -105,6 +84,36 @@ public class ExtractMarkdownFromCode {
 		return ret;
 	}
 
+	private static Collection<String> resolveResources(String sourceFileName, Collection<String> lines) throws IOException {
+		List<String> ret = Lists.newArrayList();
+		String includeTag = "// @resource";
+
+		for (String line : lines) {
+			int includeDefIdx = line.indexOf(includeTag);
+			if (includeDefIdx != -1) {
+				String fileName = line.substring(includeDefIdx + includeTag.length()).trim();
+				String basePath = sourceFileName.substring(0, sourceFileName.lastIndexOf('/') + 1);
+				basePath = basePath.replaceAll("src/test/java", "src/test/resources");
+				String includeFilename = basePath + fileName;
+				
+				System.out.println("Resource: "+includeFilename);
+				
+				List<String> includedLines = Files.readLines(new File(includeFilename), Charsets.UTF_8);
+				Collection<String> shiftedLines = Collections2.transform(includedLines, new Function<String, String>() {
+
+					@Override
+					public String apply(String input) {
+						return "\t\t" + input;
+					}
+				});
+				ret.addAll(shiftedLines);
+			} else {
+				ret.add(line);
+			}
+		}
+		return ret;
+	}
+	
 	private static Collection<String> surroundHeadlineWithEmptyLines(Collection<String> lines) {
 		List<String> ret=Lists.newArrayList();
 		for (String line : lines) {
