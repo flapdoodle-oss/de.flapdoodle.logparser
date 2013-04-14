@@ -27,32 +27,32 @@ import org.junit.Test;
 
 import de.flapdoodle.logparser.IStreamListener;
 
-
 public class TestLogProgressStreamListenerProxy {
 
 	@Test
 	public void loopUntilOutput() {
-		
-		int loopsBeforeOutput=10;
-		
-		CountCallsStreamListener<String> countingListener=new CountCallsStreamListener<>();
-		
-		LogProgressStreamListenerProxyTestInstance streamListener=new LogProgressStreamListenerProxyTestInstance(countingListener, loopsBeforeOutput);
 
-		for (int i=0;i<4*loopsBeforeOutput;i++) {
+		int loopsBeforeOutput = 10;
+
+		CountCallsStreamListener<String> countingListener = new CountCallsStreamListener<>();
+
+		LogProgressStreamListenerProxyTestInstance<String> streamListener = new LogProgressStreamListenerProxyTestInstance<>(
+				countingListener, loopsBeforeOutput);
+
+		for (int i = 0; i < 4 * loopsBeforeOutput; i++) {
 			streamListener.entry("dummy");
 		}
-		
-		assertEquals("proxy called",40,countingListener.called());
-		assertEquals("proxy called",4,streamListener.showProgressCalled());
-		
+
+		assertEquals("proxy called", 40, countingListener.called());
+		assertEquals("proxy called", 4, streamListener.showProgressCalled());
 	}
-	
-	private final class LogProgressStreamListenerProxyTestInstance extends LogProgressStreamListenerProxy {
+
+	private final class LogProgressStreamListenerProxyTestInstance<T> extends LogProgressStreamListenerProxy<T> {
 
 		int _showProgressCalled;
-		
-		private LogProgressStreamListenerProxyTestInstance(IStreamListener proxiedStreamListener, int nrOfEntriesBeforeOutput) {
+
+		private LogProgressStreamListenerProxyTestInstance(IStreamListener<T> proxiedStreamListener,
+				int nrOfEntriesBeforeOutput) {
 			super(proxiedStreamListener, nrOfEntriesBeforeOutput);
 		}
 
@@ -61,22 +61,21 @@ public class TestLogProgressStreamListenerProxy {
 			_showProgressCalled++;
 			super.showProgress(entries);
 		}
-		
-		
+
 		public int showProgressCalled() {
 			return _showProgressCalled;
 		}
 	}
 
 	static class CountCallsStreamListener<T> implements IStreamListener<T> {
+
 		private long _called;
 
 		@Override
-		public void entry(T value) {			
+		public void entry(T value) {
 			_called++;
 		}
 
-		
 		public long called() {
 			return _called;
 		}
